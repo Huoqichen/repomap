@@ -1,0 +1,290 @@
+# repomap
+
+Turn any GitHub repository into an architecture diagram.
+
+`repomap` is a Python CLI that clones a GitHub repository, scans its source tree, detects dependencies across supported languages, and turns the result into a readable architecture map. It is designed for engineers who want a quick structural view of an unfamiliar codebase without manually tracing imports, packages, and folders.
+
+It currently supports Python, JavaScript, and Go projects, and produces three useful outputs in a single run:
+
+- a folder tree for quick orientation
+- a JSON architecture map for tooling and automation
+- a Mermaid dependency graph for documentation and sharing
+
+## Introduction
+
+Modern repositories grow faster than their documentation. `repomap` helps you answer questions like:
+
+- What are the major parts of this repo?
+- Which modules depend on each other?
+- Is this mostly frontend, backend, database, or infrastructure code?
+- How can I visualize the architecture in a format I can paste into GitHub, Notion, or docs?
+
+Instead of generating a vague summary, `repomap` builds a dependency graph from real source files and renders it into outputs that are useful for humans and machines.
+
+## Features
+
+- Accepts a GitHub repository URL and clones it locally
+- Detects the primary language automatically
+- Supports Python, JavaScript, and Go repositories
+- Scans the repository tree while skipping common generated directories
+- Builds an internal dependency graph with `networkx`
+- Parses Python imports with `ast`
+- Resolves JavaScript imports including `import`, `require()`, and dynamic `import()`
+- Parses Go packages and imports using `go.mod` when available
+- Infers top-level architecture layers such as `Frontend`, `Backend`, `Database`, and `Infrastructure`
+- Generates interactive Mermaid diagrams with clickable nodes for GitHub-hosted files
+- Exports a JSON architecture map for downstream tooling
+- Presents results with a clean CLI powered by `typer` and `rich`
+
+## Demo
+
+Basic usage:
+
+```bash
+repomap https://github.com/user/repo
+```
+
+Save machine-readable outputs:
+
+```bash
+repomap https://github.com/user/repo \
+  --json-out architecture.json \
+  --mermaid-out architecture.mmd
+```
+
+Analyze a specific branch:
+
+```bash
+repomap https://github.com/user/repo --branch main
+```
+
+How `repomap` works:
+
+```mermaid
+flowchart LR
+    A["GitHub URL"] --> B["Clone repository"]
+    B --> C["Scan folders and source files"]
+    C --> D["Detect languages"]
+    D --> E["Parse imports and packages"]
+    E --> F["Build dependency graph"]
+    F --> G["Infer architecture layers"]
+    G --> H["Render tree view"]
+    G --> I["Export JSON map"]
+    G --> J["Generate Mermaid diagram"]
+```
+
+## Installation
+
+Requirements:
+
+- Python 3.11+
+- Git available on your system
+
+Install locally in editable mode:
+
+```bash
+python -m pip install -e .
+```
+
+Install with development dependencies:
+
+```bash
+python -m pip install -e .[dev]
+```
+
+After installation, the CLI is available as:
+
+```bash
+repomap --help
+```
+
+## Usage
+
+Analyze a public repository:
+
+```bash
+repomap https://github.com/user/repo
+```
+
+Write artifacts to disk:
+
+```bash
+repomap https://github.com/user/repo \
+  --json-out out/architecture.json \
+  --mermaid-out out/architecture.mmd
+```
+
+Keep the cloned repository instead of cleaning up the temporary checkout:
+
+```bash
+repomap https://github.com/user/repo --keep-clone
+```
+
+Clone into a specific directory:
+
+```bash
+repomap https://github.com/user/repo --clone-dir ./tmp
+```
+
+CLI options:
+
+```text
+repomap [OPTIONS] REPO_URL
+
+Arguments:
+  REPO_URL        GitHub repository URL to analyze
+
+Options:
+  --branch TEXT   Optional branch to clone
+  --clone-dir     Directory where the repository should be cloned
+  --json-out      Optional file path for the JSON architecture map
+  --mermaid-out   Optional file path for the Mermaid diagram
+  --keep-clone    Keep the cloned repository when using a temporary directory
+  --help          Show help
+```
+
+## Example output
+
+CLI summary:
+
+```text
+Project Architecture
+D:\temp\repo
+
+Architecture Summary
+┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Category             ┃ Details                               ┃
+┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Primary language     │ Python                                │
+│ Detected languages   │ Python (42), JavaScript (8)           │
+│ Architecture layers  │ Frontend (6), Backend (18), Database (4) │
+└──────────────────────┴───────────────────────────────────────┘
+```
+
+Folder tree:
+
+```text
+repo
+├── api
+│   ├── handlers.py
+│   └── routes.py
+├── core
+│   ├── service.py
+│   └── utils.py
+├── db
+│   ├── models.py
+│   └── migrations
+└── web
+    ├── components
+    └── app.tsx
+```
+
+JSON architecture map:
+
+```json
+{
+  "repository_url": "https://github.com/user/repo",
+  "primary_language": "Python",
+  "detected_languages": [
+    { "name": "Python", "file_count": 42, "extensions": [".py"] },
+    { "name": "JavaScript", "file_count": 8, "extensions": [".ts", ".tsx"] }
+  ],
+  "architecture_layers": [
+    { "name": "Frontend", "module_count": 6 },
+    { "name": "Backend", "module_count": 18 },
+    { "name": "Database", "module_count": 4 }
+  ]
+}
+```
+
+Generated Mermaid diagram:
+
+```mermaid
+flowchart LR
+    subgraph Frontend["Frontend"]
+        N0["web/app<br/><sub>JavaScript</sub>"]
+    end
+
+    subgraph Backend["Backend"]
+        N1["api.routes<br/><sub>Python</sub>"]
+        N2["core.service<br/><sub>Python</sub>"]
+    end
+
+    subgraph Database["Database"]
+        N3["db.models<br/><sub>Python</sub>"]
+    end
+
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+```
+
+The actual Mermaid emitted by `repomap` also includes node classes and `click` actions so diagrams can link back to source files on GitHub.
+
+## Architecture
+
+The project is organized as a small set of focused modules:
+
+```text
+repomap/
+├── __init__.py
+├── analyzer.py
+├── cli.py
+├── graph.py
+├── layers.py
+├── models.py
+├── parser.py
+└── repository.py
+```
+
+Responsibilities:
+
+- `cli.py` handles the command-line interface and rich terminal output
+- `repository.py` handles repository cloning, cleanup, and branch detection
+- `parser.py` performs language detection and source-level dependency extraction
+- `analyzer.py` coordinates repository scanning and builds the analysis result
+- `layers.py` infers higher-level architecture layers from paths and dependencies
+- `graph.py` builds the `networkx` graph and renders JSON and Mermaid output
+- `models.py` defines the shared data structures used across the project
+
+Internal flow:
+
+```mermaid
+flowchart TD
+    CLI["cli.py"] --> REPO["repository.py"]
+    CLI --> ANALYZER["analyzer.py"]
+    ANALYZER --> PARSER["parser.py"]
+    ANALYZER --> LAYERS["layers.py"]
+    ANALYZER --> MODELS["models.py"]
+    CLI --> GRAPH["graph.py"]
+    GRAPH --> MODELS
+    GRAPH --> REPO
+```
+
+## Contributing
+
+Contributions are welcome. Good areas to extend include:
+
+- support for more languages
+- more accurate dependency resolution for monorepos
+- additional export formats such as Graphviz or HTML
+- better heuristics for architecture layer detection
+- improved tests and real-world fixtures
+
+Typical local workflow:
+
+```bash
+git clone https://github.com/your-name/repomap.git
+cd repomap
+python -m pip install -e .[dev]
+python -m pytest
+```
+
+When contributing:
+
+- keep the code modular
+- prefer small, focused changes
+- add or update tests when behavior changes
+- document new CLI flags or output formats in this README
+
+If you find a bug or have an idea for a feature, open an issue or submit a pull request.
