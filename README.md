@@ -2,116 +2,93 @@
 
 Turn any GitHub repository into an architecture diagram.
 
-`repomap` is now both a Python CLI and a web application. It clones a GitHub repository, scans its source tree, detects dependencies across supported languages, and turns the result into a readable architecture map. It is designed for engineers who want a quick structural view of an unfamiliar codebase without manually tracing imports, packages, and folders.
+将任意 GitHub 仓库转换为架构图。
 
-It currently supports Python, JavaScript, and Go projects, and produces these outputs in a single run:
+`repomap` is a repository architecture explorer with a Python analysis engine, a FastAPI backend, and a Next.js + D3.js web UI. It clones a GitHub repository, detects modules and dependencies, infers top-level layers, and renders the result as a folder tree, JSON graph, Mermaid diagram, and interactive graph.
 
-- a folder tree for quick orientation
-- a JSON architecture map for tooling and automation
-- a Mermaid dependency graph for documentation and sharing
-- an interactive web graph rendered with Next.js and D3.js
+`repomap` 是一个仓库架构分析工具，包含 Python 分析引擎、FastAPI 后端以及 Next.js + D3.js Web 界面。它可以克隆 GitHub 仓库、检测模块与依赖、推断顶层架构层，并将结果渲染为目录树、JSON 图、Mermaid 图以及交互式关系图。
 
-## Introduction
+## Highlights
 
-Modern repositories grow faster than their documentation. `repomap` helps you answer questions like:
+### English
 
-- What are the major parts of this repo?
-- Which modules depend on each other?
-- Is this mostly frontend, backend, database, or infrastructure code?
-- How can I visualize the architecture in a format I can paste into GitHub, Notion, or docs?
+- Analyze GitHub repositories from a CLI or web UI
+- Detect Python, JavaScript, and Go automatically
+- Build dependency graphs with `networkx`
+- Infer `Frontend`, `Backend`, `Database`, `Infrastructure`, and `Shared` layers
+- Export folder tree, JSON, and Mermaid output
+- Explore an interactive graph in the browser with D3.js
+- Use a same-origin Next.js proxy to avoid frontend `Failed to fetch` issues in local development
+- Configure `allowedDevOrigins` for LAN-based Next.js development
 
-Instead of generating a vague summary, `repomap` builds a dependency graph from real source files and renders it into outputs that are useful for humans and machines.
+### 简体中文
 
-## Features
+- 既支持命令行，也支持 Web 界面分析 GitHub 仓库
+- 自动识别 Python、JavaScript、Go
+- 使用 `networkx` 构建依赖关系图
+- 自动推断 `Frontend`、`Backend`、`Database`、`Infrastructure`、`Shared` 等架构层
+- 支持导出目录树、JSON 和 Mermaid
+- 使用 D3.js 在浏览器中交互式浏览架构图
+- 通过 Next.js 同源代理避免本地开发时前端出现 `Failed to fetch`
+- 支持配置 `allowedDevOrigins`，解决局域网访问开发服务器时的 Next.js 警告
 
-- Accepts a GitHub repository URL and clones it locally
-- Detects the primary language automatically
-- Supports Python, JavaScript, and Go repositories
-- Scans the repository tree while skipping common generated directories
-- Builds an internal dependency graph with `networkx`
-- Parses Python imports with `ast`
-- Resolves JavaScript imports including `import`, `require()`, and dynamic `import()`
-- Parses Go packages and imports using `go.mod` when available
-- Infers top-level architecture layers such as `Frontend`, `Backend`, `Database`, and `Infrastructure`
-- Generates interactive Mermaid diagrams with clickable nodes for GitHub-hosted files
-- Exposes a Python web API for remote analysis
-- Includes a Next.js frontend for exploring the dependency graph visually
-- Exports a JSON architecture map for downstream tooling
-- Presents results with a clean CLI powered by `typer` and `rich`
+## Architecture
 
-## Demo
+### English
 
-Basic usage:
+The project is organized as a small monorepo:
 
-```bash
-repomap https://github.com/user/repo
+```text
+repomap/
+├── repomap/        # Core analysis engine
+├── repomap_api/    # FastAPI backend
+├── web/            # Next.js + D3.js frontend
+├── Dockerfile.api
+└── docker-compose.yml
 ```
 
-Save machine-readable outputs:
-
-```bash
-repomap https://github.com/user/repo \
-  --json-out architecture.json \
-  --mermaid-out architecture.mmd
-```
-
-Analyze a specific branch:
-
-```bash
-repomap https://github.com/user/repo --branch main
-```
-
-Run the web stack locally:
-
-```bash
-uvicorn repomap_api.main:app --reload --port 8000
-cd web
-npm install
-npm run dev
-```
-
-How `repomap` works:
+System flow:
 
 ```mermaid
 flowchart LR
-    A["GitHub URL"] --> B["Clone repository"]
-    B --> C["Scan folders and source files"]
-    C --> D["Detect languages"]
-    D --> E["Parse imports and packages"]
-    E --> F["Build dependency graph"]
-    F --> G["Infer architecture layers"]
-    G --> H["Render tree view"]
-    G --> I["Export JSON map"]
-    G --> J["Generate Mermaid diagram"]
+    USER["Browser / CLI User"] --> WEB["Next.js Web UI"]
+    USER --> CLI["repomap CLI"]
+    WEB --> PROXY["Next.js /api/analyze proxy"]
+    PROXY --> API["FastAPI backend"]
+    CLI --> ENGINE["Python analysis engine"]
+    API --> ENGINE
+    ENGINE --> GIT["GitHub repository"]
+    ENGINE --> OUT["JSON / Mermaid / Tree / Graph"]
 ```
 
-## Installation
+### 简体中文
 
-Requirements:
+项目采用小型 monorepo 结构：
 
-- Python 3.11+
-- Git available on your system
-- Node.js 20+ for the web frontend
+- `repomap/`：核心分析引擎
+- `repomap_api/`：FastAPI 后端
+- `web/`：Next.js + D3.js 前端
 
-Install locally in editable mode:
+前端通过同源 `/api/analyze` 请求 Next.js 路由，再由服务端代理请求 Python API，这样可以避免浏览器直接跨域访问后端时出现的连接问题。
+
+## Quick Start
+
+### English
+
+Install Python dependencies:
 
 ```bash
 python -m pip install -e .
 ```
 
-Install with development dependencies:
+Run the backend:
 
 ```bash
-python -m pip install -e .[dev]
+cp .env.api.example .env
+uvicorn repomap_api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-After installation, the CLI is available as:
-
-```bash
-repomap --help
-```
-
-For the web frontend:
+Run the frontend:
 
 ```bash
 cd web
@@ -120,118 +97,140 @@ npm install
 npm run dev
 ```
 
-Backend API only:
+Open:
+
+```text
+http://localhost:3000
+```
+
+### 简体中文
+
+安装 Python 依赖：
+
+```bash
+python -m pip install -e .
+```
+
+启动后端：
 
 ```bash
 cp .env.api.example .env
 uvicorn repomap_api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Usage
+启动前端：
 
-Analyze a public repository:
+```bash
+cd web
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+浏览器访问：
+
+```text
+http://localhost:3000
+```
+
+## CLI Usage
+
+### English
 
 ```bash
 repomap https://github.com/user/repo
+repomap https://github.com/user/repo --branch main
+repomap https://github.com/user/repo --json-out architecture.json --mermaid-out architecture.mmd
 ```
 
-Write artifacts to disk:
+### 简体中文
 
 ```bash
-repomap https://github.com/user/repo \
-  --json-out out/architecture.json \
-  --mermaid-out out/architecture.mmd
+repomap https://github.com/user/repo
+repomap https://github.com/user/repo --branch main
+repomap https://github.com/user/repo --json-out architecture.json --mermaid-out architecture.mmd
 ```
 
-Keep the cloned repository instead of cleaning up the temporary checkout:
+命令行可以直接输出目录树、JSON 架构图和 Mermaid 图。
 
-```bash
-repomap https://github.com/user/repo --keep-clone
+## Web UI
+
+### English
+
+The web interface accepts:
+
+- GitHub repository URL
+- optional branch name
+
+It displays:
+
+- interactive architecture graph
+- architecture layers
+- selected module details
+- folder tree
+- Mermaid output
+
+### 简体中文
+
+Web 界面支持输入：
+
+- GitHub 仓库地址
+- 可选分支名
+
+显示内容包括：
+
+- 交互式架构图
+- 架构层摘要
+- 当前模块详情
+- 目录树
+- Mermaid 输出
+
+## Fixes for Next.js warning and `Failed to fetch`
+
+### English
+
+This repository now includes two changes specifically for the issues you saw:
+
+1. `allowedDevOrigins` is configured in [web/next.config.mjs](web/next.config.mjs) so LAN development hosts such as `192.168.164.1` can access `/_next/*` resources without the upcoming Next.js restriction warning.
+2. The frontend no longer calls the Python API directly from the browser. Instead, it sends requests to the same-origin route [web/app/api/analyze/route.js](web/app/api/analyze/route.js), which proxies the request to the backend using `REPOMAP_API_URL`. This avoids common local network and CORS-related `Failed to fetch` errors.
+
+Frontend environment example:
+
+```env
+REPOMAP_API_URL=http://127.0.0.1:8000
+ALLOWED_DEV_ORIGINS=localhost,127.0.0.1,192.168.164.1
 ```
 
-Clone into a specific directory:
+### 简体中文
 
-```bash
-repomap https://github.com/user/repo --clone-dir ./tmp
+这个仓库已经针对你遇到的两个问题完成修复：
+
+1. 在 [web/next.config.mjs](web/next.config.mjs) 中加入了 `allowedDevOrigins`，允许像 `192.168.164.1` 这样的局域网开发地址访问 `/_next/*` 资源。
+2. 前端不再由浏览器直接请求 Python API，而是改为请求同源的 [web/app/api/analyze/route.js](web/app/api/analyze/route.js)，再由 Next.js 服务端代理到后端 `REPOMAP_API_URL`，从而减少本地网络环境导致的 `Failed to fetch`。
+
+推荐前端环境变量：
+
+```env
+REPOMAP_API_URL=http://127.0.0.1:8000
+ALLOWED_DEV_ORIGINS=localhost,127.0.0.1,192.168.164.1
 ```
 
-CLI options:
+## Example Output
 
-```text
-repomap [OPTIONS] REPO_URL
-
-Arguments:
-  REPO_URL        GitHub repository URL to analyze
-
-Options:
-  --branch TEXT   Optional branch to clone
-  --clone-dir     Directory where the repository should be cloned
-  --json-out      Optional file path for the JSON architecture map
-  --mermaid-out   Optional file path for the Mermaid diagram
-  --keep-clone    Keep the cloned repository when using a temporary directory
-  --help          Show help
-```
-
-Web UI:
-
-```text
-Backend:
-  uvicorn repomap_api.main:app --reload --port 8000
-
-Frontend:
-  cd web
-  npm run dev
-
-Open:
-  http://localhost:3000
-```
-
-## Example output
-
-CLI summary:
+### English
 
 ```text
 Project Architecture
-D:\temp\repo
-
-Architecture Summary
-┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Category             ┃ Details                               ┃
-┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ Primary language     │ Python                                │
-│ Detected languages   │ Python (42), JavaScript (8)           │
-│ Architecture layers  │ Frontend (6), Backend (18), Database (4) │
-└──────────────────────┴───────────────────────────────────────┘
-```
-
-Folder tree:
-
-```text
 repo
 ├── api
-│   ├── handlers.py
-│   └── routes.py
 ├── core
-│   ├── service.py
-│   └── utils.py
 ├── db
-│   ├── models.py
-│   └── migrations
 └── web
-    ├── components
-    └── app.tsx
 ```
-
-JSON architecture map:
 
 ```json
 {
-  "repository_url": "https://github.com/user/repo",
   "primary_language": "Python",
-  "detected_languages": [
-    { "name": "Python", "file_count": 42, "extensions": [".py"] },
-    { "name": "JavaScript", "file_count": 8, "extensions": [".ts", ".tsx"] }
-  ],
   "architecture_layers": [
     { "name": "Frontend", "module_count": 6 },
     { "name": "Backend", "module_count": 18 },
@@ -240,235 +239,103 @@ JSON architecture map:
 }
 ```
 
-Generated Mermaid diagram:
-
 ```mermaid
 flowchart LR
     subgraph Frontend["Frontend"]
-        N0["web/app<br/><sub>JavaScript</sub>"]
+        UI["web/app"]
     end
-
     subgraph Backend["Backend"]
-        N1["api.routes<br/><sub>Python</sub>"]
-        N2["core.service<br/><sub>Python</sub>"]
+        API["api.routes"]
+        CORE["core.service"]
     end
-
     subgraph Database["Database"]
-        N3["db.models<br/><sub>Python</sub>"]
+        DB["db.models"]
     end
-
-    N0 --> N1
-    N1 --> N2
-    N2 --> N3
+    UI --> API
+    API --> CORE
+    CORE --> DB
 ```
 
-The actual Mermaid emitted by `repomap` also includes node classes and `click` actions so diagrams can link back to source files on GitHub.
+### 简体中文
 
-Interactive web UI:
+输出结果通常包括：
 
-```text
-+-----------------------------------------------------------+
-| repomap.vercel.app                                        |
-|                                                           |
-| [ GitHub repository URL................................. ] |
-| [ Branch....... ] [ Analyze repo ]                        |
-|                                                           |
-|  Interactive architecture graph                           |
-|   o Frontend  ---->  o Backend  ---->  o Database         |
-|          \                    \                           |
-|           \-----> o Shared ----\----> o Infrastructure    |
-|                                                           |
-|  Sidebar: layers, selected module, folder tree, Mermaid   |
-+-----------------------------------------------------------+
-```
+- 目录树
+- JSON 架构图
+- Mermaid 图
+- D3 交互式关系图
 
 ## Deployment
 
-`repomap` is designed to deploy cleanly as two services:
+### English
 
-- frontend: Next.js on Vercel
-- backend: Python API on any container host such as Railway, Render, Fly.io, or your own VM
+Frontend on Vercel:
 
-This split is the most production-friendly setup today because the frontend benefits from Vercel's Next.js hosting, while the backend needs `git` and enough runtime to clone and analyze repositories.
+1. Import the repository into Vercel
+2. Set `Root Directory` to `web`
+3. Set environment variable `REPOMAP_API_URL` to your backend API
+4. Deploy
 
-### Vercel deployment
-
-Frontend deployment files are included in:
-
-- [web/vercel.json](web/vercel.json)
-- [web/.env.example](web/.env.example)
-
-Recommended setup:
-
-1. Import this GitHub repository into Vercel.
-2. Set the project Root Directory to `web`.
-3. Confirm the framework is `Next.js`.
-4. Set the environment variable `NEXT_PUBLIC_REPOMAP_API_URL` to your deployed backend API URL.
-5. Deploy.
-
-Example production environment variable:
-
-```text
-NEXT_PUBLIC_REPOMAP_API_URL=https://api-repomap.yourdomain.com
-```
-
-If you want the public demo domain to be `repomap.vercel.app`, attach that Vercel project to the `web/` directory and point it at your backend API URL.
-
-### Docker
-
-Container files are included in:
-
-- [Dockerfile.api](Dockerfile.api)
-- [docker-compose.yml](docker-compose.yml)
-- [web/Dockerfile](web/Dockerfile)
-- [.env.api.example](.env.api.example)
-
-Run both services locally with Docker Compose:
-
-```bash
-docker compose up --build
-```
-
-This starts:
-
-- frontend at `http://localhost:3000`
-- backend API at `http://localhost:8000`
-
-Build only the backend image:
+Backend with Docker:
 
 ```bash
 docker build -f Dockerfile.api -t repomap-api .
 docker run --rm -p 8000:8000 --env-file .env repomap-api
 ```
 
-Build only the frontend image:
+Run the full stack with Docker Compose:
 
 ```bash
-docker build -f web/Dockerfile -t repomap-web ./web
-docker run --rm -p 3000:3000 -e NEXT_PUBLIC_REPOMAP_API_URL=http://localhost:8000 repomap-web
+docker compose up --build
 ```
 
-### Production deployment for an online demo
+### 简体中文
 
-For a production demo such as `repomap.vercel.app`, use this architecture:
+Vercel 前端部署步骤：
 
-```mermaid
-flowchart LR
-    USER["Browser"] --> WEB["repomap.vercel.app (Next.js on Vercel)"]
-    WEB --> API["repomap API (Docker host)"]
-    API --> GIT["github.com"]
-```
+1. 在 Vercel 导入仓库
+2. 将 `Root Directory` 设置为 `web`
+3. 设置环境变量 `REPOMAP_API_URL`
+4. 部署
 
-Production checklist:
+后端可通过 Docker 部署，前后端也可以直接使用 `docker compose up --build` 一起启动。
 
-1. Deploy the backend API first.
-2. Ensure the backend host has `git` installed.
-3. Set `REPOMAP_CORS_ORIGINS` to your frontend domain.
-4. Deploy the frontend on Vercel with `Root Directory = web`.
-5. Set `NEXT_PUBLIC_REPOMAP_API_URL` in Vercel to the backend URL.
-6. Add your final custom domain if needed.
+## Development Notes
 
-Example backend environment:
+### English
 
-```text
-REPOMAP_CORS_ORIGINS=https://repomap.vercel.app
-REPOMAP_CLONE_DIR=
-```
+- Backend entrypoint: [repomap_api/main.py](repomap_api/main.py)
+- Frontend page: [web/components/repo-workbench.jsx](web/components/repo-workbench.jsx)
+- D3 canvas: [web/components/graph-canvas.jsx](web/components/graph-canvas.jsx)
+- Next.js proxy route: [web/app/api/analyze/route.js](web/app/api/analyze/route.js)
 
-Example production URLs:
+### 简体中文
 
-```text
-Frontend: https://repomap.vercel.app
-Backend:  https://repomap-api.fly.dev
-```
-
-Operational notes:
-
-- the backend performs live repository cloning, so outbound network access must be enabled
-- large repositories will take longer to analyze and may need longer request timeouts
-- if you expect heavy usage, add caching and background job handling in front of `/api/analyze`
-- if you deploy the backend behind a proxy, forward standard `X-Forwarded-*` headers
-
-## Architecture
-
-The project is organized as a small monorepo with a Python backend and a Next.js frontend:
-
-```text
-repomap/
-├── repomap/
-│   ├── analyzer.py
-│   ├── cli.py
-│   ├── graph.py
-│   ├── layers.py
-│   ├── models.py
-│   ├── parser.py
-│   └── repository.py
-├── repomap_api/
-│   ├── config.py
-│   ├── main.py
-│   ├── schemas.py
-│   └── service.py
-└── web/
-    ├── app/
-    ├── components/
-    └── lib/
-```
-
-Responsibilities:
-
-- `cli.py` handles the command-line interface and rich terminal output
-- `repository.py` handles repository cloning, cleanup, and branch detection
-- `parser.py` performs language detection and source-level dependency extraction
-- `analyzer.py` coordinates repository scanning and builds the analysis result
-- `layers.py` infers higher-level architecture layers from paths and dependencies
-- `graph.py` builds the `networkx` graph and renders JSON and Mermaid output
-- `models.py` defines the shared data structures used across the project
-- `repomap_api/main.py` exposes the FastAPI backend endpoints
-- `repomap_api/service.py` wraps repository analysis for the web API
-- `web/app` contains the Next.js app router pages and global styles
-- `web/components/graph-canvas.jsx` renders the interactive D3 force graph
-
-Internal flow:
-
-```mermaid
-flowchart TD
-    CLI["cli.py"] --> REPO["repository.py"]
-    CLI --> ANALYZER["analyzer.py"]
-    ANALYZER --> PARSER["parser.py"]
-    ANALYZER --> LAYERS["layers.py"]
-    ANALYZER --> MODELS["models.py"]
-    CLI --> GRAPH["graph.py"]
-    GRAPH --> MODELS
-    GRAPH --> REPO
-    WEB["Next.js frontend"] --> API["FastAPI backend"]
-    API --> ANALYZER
-    API --> GRAPH
-```
+- 后端入口：[repomap_api/main.py](repomap_api/main.py)
+- 前端主界面：[web/components/repo-workbench.jsx](web/components/repo-workbench.jsx)
+- D3 图组件：[web/components/graph-canvas.jsx](web/components/graph-canvas.jsx)
+- Next.js 代理接口：[web/app/api/analyze/route.js](web/app/api/analyze/route.js)
 
 ## Contributing
 
-Contributions are welcome. Good areas to extend include:
+### English
 
-- support for more languages
-- more accurate dependency resolution for monorepos
-- additional export formats such as Graphviz or HTML
-- better heuristics for architecture layer detection
-- improved tests and real-world fixtures
+Contributions are welcome. Useful directions include:
 
-Typical local workflow:
+- more language support
+- stronger monorepo dependency resolution
+- caching and background jobs for large repositories
+- better graph filtering and search
 
-```bash
-git clone https://github.com/your-name/repomap.git
-cd repomap
-python -m pip install -e .[dev]
-python -m pytest
-```
+### 简体中文
 
-When contributing:
+欢迎贡献，特别适合继续完善的方向包括：
 
-- keep the code modular
-- prefer small, focused changes
-- add or update tests when behavior changes
-- document new CLI flags or output formats in this README
+- 更多语言支持
+- 更强的 monorepo 依赖解析
+- 面向大仓库的缓存和异步任务
+- 更好的图过滤与搜索体验
 
-If you find a bug or have an idea for a feature, open an issue or submit a pull request.
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Huoqichen/repograph&type=Date)](https://star-history.com/#Huoqichen/repograph&Date)

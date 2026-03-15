@@ -1,11 +1,9 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_REPOMAP_API_URL || "http://localhost:8000";
-
 export async function fetchArchitecture(repoUrl, branch) {
   if (!repoUrl.includes("github.com/")) {
-    throw new Error("Please enter a valid GitHub repository URL.");
+    throw new Error("Please enter a valid GitHub repository URL. / 请输入有效的 GitHub 仓库地址。");
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/analyze`, {
+  const response = await fetch("/api/analyze", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -18,7 +16,7 @@ export async function fetchArchitecture(repoUrl, branch) {
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload.detail || "Failed to analyze repository.");
+    throw new Error(payload.detail || "Failed to analyze repository. / 仓库分析失败。");
   }
 
   return payload;

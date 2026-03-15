@@ -7,8 +7,8 @@ RUN npm ci
 FROM node:20-alpine AS builder
 
 WORKDIR /app
-ARG NEXT_PUBLIC_REPOMAP_API_URL=http://localhost:8000
-ENV NEXT_PUBLIC_REPOMAP_API_URL=${NEXT_PUBLIC_REPOMAP_API_URL}
+ARG REPOMAP_API_URL=http://api:8000
+ENV REPOMAP_API_URL=${REPOMAP_API_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
@@ -18,6 +18,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV REPOMAP_API_URL=http://api:8000
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static

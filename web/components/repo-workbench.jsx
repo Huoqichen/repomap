@@ -59,30 +59,45 @@ export function RepoWorkbench() {
       <section className="hero">
         <article className="hero-card hero-copy">
           <span className="eyebrow">repomap.vercel.app</span>
-          <h1>Repository architecture, mapped in seconds.</h1>
-          <p>
-            Paste any GitHub repository URL and inspect its architecture as an interactive graph.
-            The Python backend analyzes the codebase, and the Next.js + D3 frontend turns the
-            result into something you can actually explore.
-          </p>
+          <h1>
+            Repository architecture,
+            <br />
+            mapped in seconds.
+          </h1>
+          <BiCopy
+            en="Paste any GitHub repository URL and inspect its architecture as an interactive graph. The Python backend analyzes the codebase, and the Next.js + D3 frontend turns the result into something you can actually explore."
+            zh="输入任意 GitHub 仓库地址，即可用交互式图谱查看其架构。Python 后端负责分析代码仓库，Next.js + D3 前端负责把结果可视化。"
+          />
         </article>
 
         <aside className="hero-card mini-grid">
           <div className="mini-card">
-            <strong>Backend</strong>
-            <p>Python API powered by the existing repository analyzer and graph builder.</p>
+            <BiHeading en="Backend" zh="后端" />
+            <BiCopy
+              en="Python API powered by the existing repository analyzer and graph builder."
+              zh="使用 Python API，直接复用现有仓库分析器和依赖图构建能力。"
+            />
           </div>
           <div className="mini-card">
-            <strong>Frontend</strong>
-            <p>Next.js app with D3.js force layout, zoom, drag, and clickable source nodes.</p>
+            <BiHeading en="Frontend" zh="前端" />
+            <BiCopy
+              en="Next.js app with D3.js force layout, zoom, drag, and clickable source nodes."
+              zh="基于 Next.js 和 D3.js，支持力导图、缩放、拖拽和源码节点点击。"
+            />
           </div>
           <div className="mini-card">
-            <strong>Layers</strong>
-            <p>Highlights Frontend, Backend, Database, Infrastructure, and Shared modules.</p>
+            <BiHeading en="Layers" zh="架构层" />
+            <BiCopy
+              en="Highlights Frontend, Backend, Database, Infrastructure, and Shared modules."
+              zh="自动识别 Frontend、Backend、Database、Infrastructure 和 Shared 等架构层。"
+            />
           </div>
           <div className="mini-card">
-            <strong>Exports</strong>
-            <p>Returns folder tree, JSON graph model, Mermaid diagram, and language detection.</p>
+            <BiHeading en="Exports" zh="导出结果" />
+            <BiCopy
+              en="Returns folder tree, JSON graph model, Mermaid diagram, and language detection."
+              zh="输出目录树、JSON 图模型、Mermaid 图以及语言识别结果。"
+            />
           </div>
         </aside>
       </section>
@@ -91,7 +106,9 @@ export function RepoWorkbench() {
         <form onSubmit={onSubmit}>
           <div className="form-grid">
             <div className="field">
-              <label htmlFor="repo-url">GitHub repository URL</label>
+              <label htmlFor="repo-url">
+                <BiInline en="GitHub repository URL" zh="GitHub 仓库地址" />
+              </label>
               <input
                 id="repo-url"
                 type="url"
@@ -102,7 +119,9 @@ export function RepoWorkbench() {
               />
             </div>
             <div className="field">
-              <label htmlFor="branch">Branch (optional)</label>
+              <label htmlFor="branch">
+                <BiInline en="Branch (optional)" zh="分支（可选）" />
+              </label>
               <input
                 id="branch"
                 type="text"
@@ -112,14 +131,18 @@ export function RepoWorkbench() {
               />
             </div>
             <button className="submit-button" type="submit" disabled={isPending}>
-              {isPending ? "Analyzing..." : "Analyze repo"}
+              {isPending ? "Analyzing... / 分析中..." : "Analyze repo / 开始分析"}
             </button>
           </div>
         </form>
 
         <div className="input-footer">
-          <span>Example: {defaultUrl}</span>
-          {error ? <span className="status-error">{error}</span> : <span>Interactive graph + JSON + Mermaid</span>}
+          <span>Example / 示例: {defaultUrl}</span>
+          {error ? (
+            <span className="status-error">{error}</span>
+          ) : (
+            <span>Interactive graph + JSON + Mermaid / 交互图 + JSON + Mermaid</span>
+          )}
         </div>
       </section>
 
@@ -130,10 +153,12 @@ export function RepoWorkbench() {
               <div className="graph-title-row">
                 <div>
                   <h2>Interactive architecture graph</h2>
-                  <p className="graph-note">
-                    Drag nodes, zoom the canvas, and click a node to open the source file when a
-                    GitHub link is available.
-                  </p>
+                  <p className="copy-zh">交互式架构图</p>
+                  <BiCopy
+                    className="graph-note"
+                    en="Drag nodes, zoom the canvas, and click a node to open the source file when a GitHub link is available."
+                    zh="你可以拖动节点、缩放画布，并在存在 GitHub 链接时点击节点打开源码文件。"
+                  />
                 </div>
                 <div className="legend">
                   {Object.entries(layerColors).map(([layer, color]) => (
@@ -146,11 +171,11 @@ export function RepoWorkbench() {
               </div>
 
               <div className="stat-row">
-                <span className="stat-pill">Primary: {architecture.primary_language ?? "Unknown"}</span>
-                <span className="stat-pill">Nodes: {result.stats.nodes}</span>
-                <span className="stat-pill">Edges: {result.stats.edges}</span>
+                <span className="stat-pill">Primary / 主语言: {architecture.primary_language ?? "Unknown"}</span>
+                <span className="stat-pill">Nodes / 节点: {result.stats.nodes}</span>
+                <span className="stat-pill">Edges / 连线: {result.stats.edges}</span>
                 <span className="stat-pill">
-                  Languages: {(architecture.detected_languages ?? []).map((item) => item.name).join(", ") || "None"}
+                  Languages / 语言: {(architecture.detected_languages ?? []).map((item) => item.name).join(", ") || "None"}
                 </span>
               </div>
             </header>
@@ -158,15 +183,19 @@ export function RepoWorkbench() {
             <GraphCanvas nodes={nodes} edges={edges} onSelect={setSelectedNode} selectedNodeId={selectedNode?.id} />
 
             <footer className="graph-toolbar">
-              <span>Repository: {architecture.repository_url}</span>
-              <span>Branch: {architecture.default_branch ?? "auto-detected"}</span>
+              <span>Repository / 仓库: {architecture.repository_url}</span>
+              <span>Branch / 分支: {architecture.default_branch ?? "auto-detected / 自动识别"}</span>
             </footer>
           </article>
 
           <aside className="sidebar">
             <section className="panel side-section">
               <h3>Architecture layers</h3>
-              <p>Top-level structure inferred from paths and dependency patterns.</p>
+              <p className="copy-zh">架构层</p>
+              <BiCopy
+                en="Top-level structure inferred from paths and dependency patterns."
+                zh="根据目录路径和依赖模式推断出的顶层架构结构。"
+              />
               <div className="layers-grid">
                 {layers.map((layer) => (
                   <span className="layer-pill" key={layer.name}>
@@ -178,6 +207,7 @@ export function RepoWorkbench() {
 
             <section className="panel side-section">
               <h3>Selected module</h3>
+              <p className="copy-zh">当前选中的模块</p>
               {selectedNode ? (
                 <>
                   <div className="module-card" data-active="true">
@@ -189,7 +219,7 @@ export function RepoWorkbench() {
                     </div>
                     {selectedNode.url ? (
                       <a href={selectedNode.url} target="_blank" rel="noreferrer">
-                        Open source file
+                        Open source file / 打开源码文件
                       </a>
                     ) : null}
                   </div>
@@ -198,26 +228,30 @@ export function RepoWorkbench() {
                       .filter((module) => module.id === selectedNode.id)
                       .map((module) => (
                         <div className="module-card" key={module.id}>
-                          <h4>Dependencies</h4>
+                          <h4>Dependencies / 依赖</h4>
                           <div className="module-meta">
-                            <span>Internal: {module.internal_dependencies.length}</span>
-                            <span>External: {module.external_dependencies.length}</span>
+                            <span>Internal / 内部: {module.internal_dependencies.length}</span>
+                            <span>External / 外部: {module.external_dependencies.length}</span>
                           </div>
                           <p>
-                            {module.external_dependencies.slice(0, 8).join(", ") || "No external dependencies detected."}
+                            {module.external_dependencies.slice(0, 8).join(", ") || "No external dependencies detected. / 未检测到外部依赖。"}
                           </p>
                         </div>
                       ))}
                   </div>
                 </>
               ) : (
-                <p>Select a node in the graph to inspect it here.</p>
+                <BiCopy en="Select a node in the graph to inspect it here." zh="在图中选择一个节点，即可在这里查看详情。" />
               )}
             </section>
 
             <section className="panel side-section">
               <h3>Module list</h3>
-              <p>Useful when the graph is dense and you want to jump to a module directly.</p>
+              <p className="copy-zh">模块列表</p>
+              <BiCopy
+                en="Useful when the graph is dense and you want to jump to a module directly."
+                zh="当图较密集时，可以从这里直接跳转到目标模块。"
+              />
               <div className="module-list">
                 {nodes.slice(0, 14).map((node) => (
                   <div className="module-card" data-active={selectedNode?.id === node.id} key={node.id}>
@@ -235,6 +269,7 @@ export function RepoWorkbench() {
 
             <section className="panel side-section">
               <h3>Folder tree</h3>
+              <p className="copy-zh">目录树</p>
               <div className="tree-list">
                 <TreeNode node={architecture.folder_tree} />
               </div>
@@ -242,7 +277,11 @@ export function RepoWorkbench() {
 
             <section className="panel side-section">
               <h3>Mermaid output</h3>
-              <p>Copy this into GitHub, docs, or Markdown viewers that support Mermaid.</p>
+              <p className="copy-zh">Mermaid 输出</p>
+              <BiCopy
+                en="Copy this into GitHub, docs, or Markdown viewers that support Mermaid."
+                zh="可以直接复制到 GitHub、文档系统或支持 Mermaid 的 Markdown 查看器中。"
+              />
               <pre className="code-block">{result.mermaid}</pre>
             </section>
           </aside>
@@ -251,11 +290,42 @@ export function RepoWorkbench() {
         <section className="panel empty-state">
           <div>
             <h2>No architecture map yet</h2>
-            <p>Submit a GitHub repository URL to generate the graph.</p>
+            <p className="copy-zh">还没有生成架构图</p>
+            <BiCopy
+              en="Submit a GitHub repository URL to generate the graph."
+              zh="提交一个 GitHub 仓库地址，即可生成架构图。"
+            />
           </div>
         </section>
       )}
     </main>
+  );
+}
+
+function BiHeading({ en, zh }) {
+  return (
+    <strong className="copy-stack">
+      <span className="copy-en">{en}</span>
+      <span className="copy-zh">{zh}</span>
+    </strong>
+  );
+}
+
+function BiCopy({ en, zh, className = "" }) {
+  return (
+    <p className={`copy-stack ${className}`.trim()}>
+      <span className="copy-en">{en}</span>
+      <span className="copy-zh">{zh}</span>
+    </p>
+  );
+}
+
+function BiInline({ en, zh }) {
+  return (
+    <>
+      {en}
+      <span className="inline-zh"> / {zh}</span>
+    </>
   );
 }
 
