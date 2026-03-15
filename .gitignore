@@ -6,3 +6,9 @@ __pycache__/
 venv/
 dist/
 build/
+.next/
+node_modules/
+out/
+.turbo/
+.env
+.env.local

@@ -13,9 +13,12 @@ authors = [
   { name = "Open Source Engineer" }
 ]
 dependencies = [
+  "fastapi>=0.135.1",
   "networkx>=3.2",
+  "pydantic>=2.12.5",
   "rich>=13.7",
   "typer>=0.12",
+  "uvicorn>=0.35.0",
 ]
 
 [project.optional-dependencies]
@@ -27,7 +30,7 @@ dev = [
 repomap = "repomap.cli:app"
 
 [tool.setuptools.packages.find]
-include = ["repomap*"]
+include = ["repomap*", "repomap_api*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

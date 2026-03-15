@@ -2,13 +2,14 @@
 
 Turn any GitHub repository into an architecture diagram.
 
-`repomap` is a Python CLI that clones a GitHub repository, scans its source tree, detects dependencies across supported languages, and turns the result into a readable architecture map. It is designed for engineers who want a quick structural view of an unfamiliar codebase without manually tracing imports, packages, and folders.
+`repomap` is now both a Python CLI and a web application. It clones a GitHub repository, scans its source tree, detects dependencies across supported languages, and turns the result into a readable architecture map. It is designed for engineers who want a quick structural view of an unfamiliar codebase without manually tracing imports, packages, and folders.
 
-It currently supports Python, JavaScript, and Go projects, and produces three useful outputs in a single run:
+It currently supports Python, JavaScript, and Go projects, and produces these outputs in a single run:
 
 - a folder tree for quick orientation
 - a JSON architecture map for tooling and automation
 - a Mermaid dependency graph for documentation and sharing
+- an interactive web graph rendered with Next.js and D3.js
 
 ## Introduction
 
@@ -33,6 +34,8 @@ Instead of generating a vague summary, `repomap` builds a dependency graph from 
 - Parses Go packages and imports using `go.mod` when available
 - Infers top-level architecture layers such as `Frontend`, `Backend`, `Database`, and `Infrastructure`
 - Generates interactive Mermaid diagrams with clickable nodes for GitHub-hosted files
+- Exposes a Python web API for remote analysis
+- Includes a Next.js frontend for exploring the dependency graph visually
 - Exports a JSON architecture map for downstream tooling
 - Presents results with a clean CLI powered by `typer` and `rich`
 
@@ -58,6 +61,15 @@ Analyze a specific branch:
 repomap https://github.com/user/repo --branch main
 ```
 
+Run the web stack locally:
+
+```bash
+uvicorn repomap_api.main:app --reload --port 8000
+cd web
+npm install
+npm run dev
+```
+
 How `repomap` works:
 
 ```mermaid
@@ -79,6 +91,7 @@ Requirements:
 
 - Python 3.11+
 - Git available on your system
+- Node.js 20+ for the web frontend
 
 Install locally in editable mode:
 
@@ -96,6 +109,15 @@ After installation, the CLI is available as:
 
 ```bash
 repomap --help
+```
+
+For the web frontend:
+
+```bash
+cd web
+cp .env.example .env.local
+npm install
+npm run dev
 ```
 
 ## Usage
@@ -221,20 +243,47 @@ flowchart LR
 
 The actual Mermaid emitted by `repomap` also includes node classes and `click` actions so diagrams can link back to source files on GitHub.
 
+Interactive web UI:
+
+```text
++-----------------------------------------------------------+
+| repomap.vercel.app                                        |
+|                                                           |
+| [ GitHub repository URL................................. ] |
+| [ Branch....... ] [ Analyze repo ]                        |
+|                                                           |
+|  Interactive architecture graph                           |
+|   o Frontend  ---->  o Backend  ---->  o Database         |
+|          \                    \                           |
+|           \-----> o Shared ----\----> o Infrastructure    |
+|                                                           |
+|  Sidebar: layers, selected module, folder tree, Mermaid   |
++-----------------------------------------------------------+
+```
+
 ## Architecture
 
-The project is organized as a small set of focused modules:
+The project is organized as a small monorepo with a Python backend and a Next.js frontend:
 
 ```text
 repomap/
-├── __init__.py
-├── analyzer.py
-├── cli.py
-├── graph.py
-├── layers.py
-├── models.py
-├── parser.py
-└── repository.py
+├── repomap/
+│   ├── analyzer.py
+│   ├── cli.py
+│   ├── graph.py
+│   ├── layers.py
+│   ├── models.py
+│   ├── parser.py
+│   └── repository.py
+├── repomap_api/
+│   ├── config.py
+│   ├── main.py
+│   ├── schemas.py
+│   └── service.py
+└── web/
+    ├── app/
+    ├── components/
+    └── lib/
 ```
 
 Responsibilities:
@@ -246,6 +295,10 @@ Responsibilities:
 - `layers.py` infers higher-level architecture layers from paths and dependencies
 - `graph.py` builds the `networkx` graph and renders JSON and Mermaid output
 - `models.py` defines the shared data structures used across the project
+- `repomap_api/main.py` exposes the FastAPI backend endpoints
+- `repomap_api/service.py` wraps repository analysis for the web API
+- `web/app` contains the Next.js app router pages and global styles
+- `web/components/graph-canvas.jsx` renders the interactive D3 force graph
 
 Internal flow:
 
@@ -259,6 +312,9 @@ flowchart TD
     CLI --> GRAPH["graph.py"]
     GRAPH --> MODELS
     GRAPH --> REPO
+    WEB["Next.js frontend"] --> API["FastAPI backend"]
+    API --> ANALYZER
+    API --> GRAPH
 ```
 
 ## Contributing
