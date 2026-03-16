@@ -261,14 +261,6 @@ Contributions are welcome. Good next steps include:
 ## Star History
 
 <p align="center">
-  <a href="https://github.com/Huoqichen">
-    <img src="https://github.com/Huoqichen.png?size=120" alt="Huoqichen avatar" width="60" height="60" />
-  </a>
-</p>
-
-<p align="center"><strong>Huoqichen / repograph</strong></p>
-
-<p align="center">
   <a href="https://www.star-history.com/?repos=Huoqichen%2Frepograph&type=date&legend=top-left">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Huoqichen/repograph&type=Date&theme=dark" />

@@ -1,20 +1,92 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import { GraphCanvas } from "./graph-canvas";
 import { fetchArchitecture } from "../lib/api";
 
-const layerColors = {
-  Frontend: "#93c5fd",
-  Backend: "#86efac",
-  Database: "#fdba74",
-  Infrastructure: "#c4b5fd",
-  Shared: "#d1d5db"
-};
-
 const defaultUrl = "https://github.com/vercel/next.js";
 
+const copy = {
+  zh: {
+    brand: "repomap.vercel.app",
+    title: "仓库架构，一眼看清。",
+    subtitle: "输入 GitHub 仓库地址，立即生成可交互的架构图。",
+    repoLabel: "GitHub 仓库地址",
+    branchLabel: "分支（可选）",
+    repoPlaceholder: "https://github.com/user/repo",
+    branchPlaceholder: "main",
+    submit: "开始分析",
+    loading: "分析中",
+    example: "示例",
+    emptyTitle: "等待分析",
+    emptyBody: "输入仓库地址后即可查看架构图。",
+    graphTitle: "架构图",
+    graphHint: "拖动、缩放、点击节点查看源码。",
+    graphRepo: "仓库",
+    graphBranch: "分支",
+    autoBranch: "自动识别",
+    summaryTitle: "概览",
+    primary: "主语言",
+    nodes: "节点",
+    edges: "连线",
+    layers: "架构层",
+    detailsTitle: "选中模块",
+    detailsEmpty: "点击图中的节点查看详细信息。",
+    openSource: "打开源码",
+    internal: "内部依赖",
+    external: "外部依赖",
+    none: "无",
+    listTitle: "模块",
+    mermaidTitle: "Mermaid",
+    treeTitle: "目录树",
+    languageZh: "中文",
+    languageEn: "EN",
+    invalidRepo: "请输入有效的 GitHub 仓库地址。",
+    backendUnreachable: "后端 API 无法访问，请先启动 Python API。",
+    analyzeFailed: "仓库分析失败。"
+  },
+  en: {
+    brand: "repomap.vercel.app",
+    title: "Repository architecture, at a glance.",
+    subtitle: "Paste a GitHub repository URL and generate an interactive architecture graph.",
+    repoLabel: "GitHub repository URL",
+    branchLabel: "Branch (optional)",
+    repoPlaceholder: "https://github.com/user/repo",
+    branchPlaceholder: "main",
+    submit: "Analyze",
+    loading: "Analyzing",
+    example: "Example",
+    emptyTitle: "Ready to analyze",
+    emptyBody: "Enter a repository URL to see the architecture graph.",
+    graphTitle: "Architecture graph",
+    graphHint: "Drag, zoom, and click nodes to open source files.",
+    graphRepo: "Repository",
+    graphBranch: "Branch",
+    autoBranch: "Auto-detected",
+    summaryTitle: "Overview",
+    primary: "Primary language",
+    nodes: "Nodes",
+    edges: "Edges",
+    layers: "Layers",
+    detailsTitle: "Selected module",
+    detailsEmpty: "Select a node in the graph to inspect it.",
+    openSource: "Open source",
+    internal: "Internal deps",
+    external: "External deps",
+    none: "None",
+    listTitle: "Modules",
+    mermaidTitle: "Mermaid",
+    treeTitle: "Tree",
+    languageZh: "中文",
+    languageEn: "EN",
+    invalidRepo: "Please enter a valid GitHub repository URL.",
+    backendUnreachable: "Backend API is unreachable. Start the Python API first.",
+    analyzeFailed: "Repository analysis failed."
+  }
+};
+
 export function RepoWorkbench() {
+  const [locale, setLocale] = useState("zh");
   const [repoUrl, setRepoUrl] = useState(defaultUrl);
   const [branch, setBranch] = useState("");
   const [result, setResult] = useState(null);
@@ -22,9 +94,22 @@ export function RepoWorkbench() {
   const [error, setError] = useState("");
   const [isPending, setIsPending] = useState(false);
 
+  const t = copy[locale];
+
   useEffect(() => {
     void handleAnalyze(defaultUrl, "");
   }, []);
+
+  const architecture = result?.architecture_map;
+  const nodes = architecture?.graph?.nodes ?? [];
+  const edges = architecture?.graph?.edges ?? [];
+  const layers = architecture?.architecture_layers ?? [];
+  const modules = architecture?.modules ?? [];
+
+  const selectedModule = useMemo(
+    () => modules.find((module) => module.id === selectedNode?.id) ?? null,
+    [modules, selectedNode]
+  );
 
   async function handleAnalyze(nextRepoUrl = repoUrl, nextBranch = branch) {
     setIsPending(true);
@@ -37,7 +122,7 @@ export function RepoWorkbench() {
         setSelectedNode(response.architecture_map.graph.nodes[0] ?? null);
       });
     } catch (requestError) {
-      setError(requestError.message);
+      setError(localizeError(requestError, locale));
     } finally {
       setIsPending(false);
     }
@@ -48,101 +133,68 @@ export function RepoWorkbench() {
     void handleAnalyze();
   }
 
-  const architecture = result?.architecture_map;
-  const nodes = architecture?.graph?.nodes ?? [];
-  const edges = architecture?.graph?.edges ?? [];
-  const layers = architecture?.architecture_layers ?? [];
-  const modules = architecture?.modules ?? [];
-
   return (
     <main className="page-shell">
-      <section className="hero">
-        <article className="hero-card hero-copy">
-          <span className="eyebrow">repomap.vercel.app</span>
-          <h1>
-            Repository architecture,
-            <br />
-            mapped in seconds.
-          </h1>
-          <BiCopy
-            en="Paste any GitHub repository URL and inspect its architecture as an interactive graph. The Python backend analyzes the codebase, and the Next.js + D3 frontend turns the result into something you can actually explore."
-            zh="输入任意 GitHub 仓库地址，即可用交互式图谱查看其架构。Python 后端负责分析代码仓库，Next.js + D3 前端负责把结果可视化。"
-          />
-        </article>
+      <header className="topbar">
+        <span className="brand-chip">{t.brand}</span>
+        <div className="lang-switch" role="tablist" aria-label="Language switch">
+          <button
+            type="button"
+            className={locale === "zh" ? "lang-button is-active" : "lang-button"}
+            onClick={() => setLocale("zh")}
+          >
+            {copy.zh.languageZh}
+          </button>
+          <button
+            type="button"
+            className={locale === "en" ? "lang-button is-active" : "lang-button"}
+            onClick={() => setLocale("en")}
+          >
+            {copy.en.languageEn}
+          </button>
+        </div>
+      </header>
 
-        <aside className="hero-card mini-grid">
-          <div className="mini-card">
-            <BiHeading en="Backend" zh="后端" />
-            <BiCopy
-              en="Python API powered by the existing repository analyzer and graph builder."
-              zh="使用 Python API，直接复用现有仓库分析器和依赖图构建能力。"
-            />
-          </div>
-          <div className="mini-card">
-            <BiHeading en="Frontend" zh="前端" />
-            <BiCopy
-              en="Next.js app with D3.js force layout, zoom, drag, and clickable source nodes."
-              zh="基于 Next.js 和 D3.js，支持力导图、缩放、拖拽和源码节点点击。"
-            />
-          </div>
-          <div className="mini-card">
-            <BiHeading en="Layers" zh="架构层" />
-            <BiCopy
-              en="Highlights Frontend, Backend, Database, Infrastructure, and Shared modules."
-              zh="自动识别 Frontend、Backend、Database、Infrastructure 和 Shared 等架构层。"
-            />
-          </div>
-          <div className="mini-card">
-            <BiHeading en="Exports" zh="导出结果" />
-            <BiCopy
-              en="Returns folder tree, JSON graph model, Mermaid diagram, and language detection."
-              zh="输出目录树、JSON 图模型、Mermaid 图以及语言识别结果。"
-            />
-          </div>
-        </aside>
+      <section className="hero-panel">
+        <h1>{t.title}</h1>
+        <p>{t.subtitle}</p>
       </section>
 
       <section className="panel input-panel">
         <form onSubmit={onSubmit}>
           <div className="form-grid">
-            <div className="field">
-              <label htmlFor="repo-url">
-                <BiInline en="GitHub repository URL" zh="GitHub 仓库地址" />
-              </label>
+            <div className="field field-wide">
+              <label htmlFor="repo-url">{t.repoLabel}</label>
               <input
                 id="repo-url"
                 type="url"
-                placeholder="https://github.com/user/repo"
+                placeholder={t.repoPlaceholder}
                 value={repoUrl}
                 onChange={(event) => setRepoUrl(event.target.value)}
                 required
               />
             </div>
-            <div className="field">
-              <label htmlFor="branch">
-                <BiInline en="Branch (optional)" zh="分支（可选）" />
-              </label>
+            <div className="field field-branch">
+              <label htmlFor="branch">{t.branchLabel}</label>
               <input
                 id="branch"
                 type="text"
-                placeholder="main"
+                placeholder={t.branchPlaceholder}
                 value={branch}
                 onChange={(event) => setBranch(event.target.value)}
               />
             </div>
             <button className="submit-button" type="submit" disabled={isPending}>
-              {isPending ? "Analyzing... / 分析中..." : "Analyze repo / 开始分析"}
+              {isPending ? t.loading : t.submit}
             </button>
           </div>
         </form>
 
         <div className="input-footer">
-          <span>Example / 示例: {defaultUrl}</span>
-          {error ? (
-            <span className="status-error">{error}</span>
-          ) : (
-            <span>Interactive graph + JSON + Mermaid / 交互图 + JSON + Mermaid</span>
-          )}
+          <span>
+            {t.example}: {defaultUrl}
+          </span>
+          {error ? <span className="status-error">{error}</span> : null}
         </div>
       </section>
 
@@ -152,50 +204,52 @@ export function RepoWorkbench() {
             <header className="graph-header">
               <div className="graph-title-row">
                 <div>
-                  <h2>Interactive architecture graph</h2>
-                  <p className="copy-zh">交互式架构图</p>
-                  <BiCopy
-                    className="graph-note"
-                    en="Drag nodes, zoom the canvas, and click a node to open the source file when a GitHub link is available."
-                    zh="你可以拖动节点、缩放画布，并在存在 GitHub 链接时点击节点打开源码文件。"
-                  />
+                  <h2>{t.graphTitle}</h2>
+                  <p className="graph-note">{t.graphHint}</p>
                 </div>
-                <div className="legend">
-                  {Object.entries(layerColors).map(([layer, color]) => (
-                    <span key={layer}>
-                      <i style={{ background: color }} />
-                      {layer}
-                    </span>
-                  ))}
+                <div className="stat-row">
+                  <span className="stat-pill">
+                    {t.primary}: {architecture.primary_language ?? t.none}
+                  </span>
+                  <span className="stat-pill">
+                    {t.nodes}: {result.stats.nodes}
+                  </span>
+                  <span className="stat-pill">
+                    {t.edges}: {result.stats.edges}
+                  </span>
                 </div>
-              </div>
-
-              <div className="stat-row">
-                <span className="stat-pill">Primary / 主语言: {architecture.primary_language ?? "Unknown"}</span>
-                <span className="stat-pill">Nodes / 节点: {result.stats.nodes}</span>
-                <span className="stat-pill">Edges / 连线: {result.stats.edges}</span>
-                <span className="stat-pill">
-                  Languages / 语言: {(architecture.detected_languages ?? []).map((item) => item.name).join(", ") || "None"}
-                </span>
               </div>
             </header>
 
             <GraphCanvas nodes={nodes} edges={edges} onSelect={setSelectedNode} selectedNodeId={selectedNode?.id} />
 
             <footer className="graph-toolbar">
-              <span>Repository / 仓库: {architecture.repository_url}</span>
-              <span>Branch / 分支: {architecture.default_branch ?? "auto-detected / 自动识别"}</span>
+              <span>
+                {t.graphRepo}: {architecture.repository_url}
+              </span>
+              <span>
+                {t.graphBranch}: {architecture.default_branch ?? t.autoBranch}
+              </span>
             </footer>
           </article>
 
           <aside className="sidebar">
             <section className="panel side-section">
-              <h3>Architecture layers</h3>
-              <p className="copy-zh">架构层</p>
-              <BiCopy
-                en="Top-level structure inferred from paths and dependency patterns."
-                zh="根据目录路径和依赖模式推断出的顶层架构结构。"
-              />
+              <h3>{t.summaryTitle}</h3>
+              <div className="summary-grid">
+                <div className="summary-card">
+                  <span>{t.layers}</span>
+                  <strong>{layers.length}</strong>
+                </div>
+                <div className="summary-card">
+                  <span>{t.nodes}</span>
+                  <strong>{result.stats.nodes}</strong>
+                </div>
+                <div className="summary-card">
+                  <span>{t.edges}</span>
+                  <strong>{result.stats.edges}</strong>
+                </div>
+              </div>
               <div className="layers-grid">
                 {layers.map((layer) => (
                   <span className="layer-pill" key={layer.name}>
@@ -206,54 +260,37 @@ export function RepoWorkbench() {
             </section>
 
             <section className="panel side-section">
-              <h3>Selected module</h3>
-              <p className="copy-zh">当前选中的模块</p>
-              {selectedNode ? (
-                <>
-                  <div className="module-card" data-active="true">
-                    <h4>{selectedNode.label}</h4>
-                    <div className="module-meta">
-                      <span>{selectedNode.language}</span>
-                      <span>{selectedNode.layer}</span>
-                      <span>{selectedNode.path}</span>
-                    </div>
-                    {selectedNode.url ? (
-                      <a href={selectedNode.url} target="_blank" rel="noreferrer">
-                        Open source file / 打开源码文件
-                      </a>
-                    ) : null}
+              <h3>{t.detailsTitle}</h3>
+              {selectedNode && selectedModule ? (
+                <div className="module-card" data-active="true">
+                  <h4>{selectedNode.label}</h4>
+                  <div className="module-meta">
+                    <span>{selectedNode.language}</span>
+                    <span>{selectedNode.layer}</span>
                   </div>
-                  <div className="module-list">
-                    {modules
-                      .filter((module) => module.id === selectedNode.id)
-                      .map((module) => (
-                        <div className="module-card" key={module.id}>
-                          <h4>Dependencies / 依赖</h4>
-                          <div className="module-meta">
-                            <span>Internal / 内部: {module.internal_dependencies.length}</span>
-                            <span>External / 外部: {module.external_dependencies.length}</span>
-                          </div>
-                          <p>
-                            {module.external_dependencies.slice(0, 8).join(", ") || "No external dependencies detected. / 未检测到外部依赖。"}
-                          </p>
-                        </div>
-                      ))}
+                  <div className="detail-pairs">
+                    <span>
+                      {t.internal}: {selectedModule.internal_dependencies.length}
+                    </span>
+                    <span>
+                      {t.external}: {selectedModule.external_dependencies.length}
+                    </span>
                   </div>
-                </>
+                  {selectedNode.url ? (
+                    <a href={selectedNode.url} target="_blank" rel="noreferrer">
+                      {t.openSource}
+                    </a>
+                  ) : null}
+                </div>
               ) : (
-                <BiCopy en="Select a node in the graph to inspect it here." zh="在图中选择一个节点，即可在这里查看详情。" />
+                <p>{t.detailsEmpty}</p>
               )}
             </section>
 
             <section className="panel side-section">
-              <h3>Module list</h3>
-              <p className="copy-zh">模块列表</p>
-              <BiCopy
-                en="Useful when the graph is dense and you want to jump to a module directly."
-                zh="当图较密集时，可以从这里直接跳转到目标模块。"
-              />
+              <h3>{t.listTitle}</h3>
               <div className="module-list">
-                {nodes.slice(0, 14).map((node) => (
+                {nodes.slice(0, 12).map((node) => (
                   <div className="module-card" data-active={selectedNode?.id === node.id} key={node.id}>
                     <button type="button" onClick={() => setSelectedNode(node)}>
                       <h4>{node.label}</h4>
@@ -268,20 +305,14 @@ export function RepoWorkbench() {
             </section>
 
             <section className="panel side-section">
-              <h3>Folder tree</h3>
-              <p className="copy-zh">目录树</p>
+              <h3>{t.treeTitle}</h3>
               <div className="tree-list">
                 <TreeNode node={architecture.folder_tree} />
               </div>
             </section>
 
             <section className="panel side-section">
-              <h3>Mermaid output</h3>
-              <p className="copy-zh">Mermaid 输出</p>
-              <BiCopy
-                en="Copy this into GitHub, docs, or Markdown viewers that support Mermaid."
-                zh="可以直接复制到 GitHub、文档系统或支持 Mermaid 的 Markdown 查看器中。"
-              />
+              <h3>{t.mermaidTitle}</h3>
               <pre className="code-block">{result.mermaid}</pre>
             </section>
           </aside>
@@ -289,43 +320,12 @@ export function RepoWorkbench() {
       ) : (
         <section className="panel empty-state">
           <div>
-            <h2>No architecture map yet</h2>
-            <p className="copy-zh">还没有生成架构图</p>
-            <BiCopy
-              en="Submit a GitHub repository URL to generate the graph."
-              zh="提交一个 GitHub 仓库地址，即可生成架构图。"
-            />
+            <h2>{t.emptyTitle}</h2>
+            <p>{t.emptyBody}</p>
           </div>
         </section>
       )}
     </main>
-  );
-}
-
-function BiHeading({ en, zh }) {
-  return (
-    <strong className="copy-stack">
-      <span className="copy-en">{en}</span>
-      <span className="copy-zh">{zh}</span>
-    </strong>
-  );
-}
-
-function BiCopy({ en, zh, className = "" }) {
-  return (
-    <p className={`copy-stack ${className}`.trim()}>
-      <span className="copy-en">{en}</span>
-      <span className="copy-zh">{zh}</span>
-    </p>
-  );
-}
-
-function BiInline({ en, zh }) {
-  return (
-    <>
-      {en}
-      <span className="inline-zh"> / {zh}</span>
-    </>
   );
 }
 
@@ -350,4 +350,15 @@ function TreeNode({ node }) {
       ) : null}
     </div>
   );
+}
+
+function localizeError(error, locale) {
+  const message = error instanceof Error ? error.message : "";
+  if (message.includes("valid GitHub")) {
+    return copy[locale].invalidRepo;
+  }
+  if (message.includes("Backend API is unreachable") || message.includes("后端 API 无法访问")) {
+    return copy[locale].backendUnreachable;
+  }
+  return message || copy[locale].analyzeFailed;
 }

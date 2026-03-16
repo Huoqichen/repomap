@@ -23,7 +23,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>{children}</body>
     </html>
   );
