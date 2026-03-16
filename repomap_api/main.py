@@ -11,8 +11,11 @@ from repomap.repository import list_remote_branches
 
 settings = get_settings()
 job_manager = get_job_manager(
+    backend=settings.job_backend,
     max_workers=settings.max_async_workers,
     job_ttl_seconds=settings.job_ttl_seconds,
+    redis_url=settings.redis_url,
+    queue_name=settings.queue_name,
 )
 app = FastAPI(
     title="repomap API",

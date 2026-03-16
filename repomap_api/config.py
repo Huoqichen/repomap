@@ -13,6 +13,9 @@ class Settings:
     cache_ttl_seconds: int
     max_async_workers: int
     job_ttl_seconds: int
+    job_backend: str
+    redis_url: str | None
+    queue_name: str
 
 
 def get_settings() -> Settings:
@@ -24,6 +27,9 @@ def get_settings() -> Settings:
     cache_ttl_seconds = int(os.getenv("REPOMAP_CACHE_TTL_SECONDS", "86400"))
     max_async_workers = int(os.getenv("REPOMAP_MAX_ASYNC_WORKERS", "2"))
     job_ttl_seconds = int(os.getenv("REPOMAP_JOB_TTL_SECONDS", "7200"))
+    job_backend = os.getenv("REPOMAP_JOB_BACKEND", "memory").strip().lower() or "memory"
+    redis_url = os.getenv("REPOMAP_REDIS_URL")
+    queue_name = os.getenv("REPOMAP_QUEUE_NAME", "repomap-analysis")
     return Settings(
         cors_origins=origins,
         clone_dir=clone_dir,
@@ -31,4 +37,7 @@ def get_settings() -> Settings:
         cache_ttl_seconds=cache_ttl_seconds,
         max_async_workers=max_async_workers,
         job_ttl_seconds=job_ttl_seconds,
+        job_backend=job_backend,
+        redis_url=redis_url,
+        queue_name=queue_name,
     )

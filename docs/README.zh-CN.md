@@ -39,6 +39,7 @@
 - 支持解析 JavaScript / TypeScript monorepo 的 `package.json`、`pnpm-workspace.yaml`、`lerna.json` workspace 与 `tsconfig` / `jsconfig` 路径别名
 - 支持磁盘缓存，重复分析同一仓库时更快
 - 面向大仓库提供异步分析任务与进度轮询接口
+- 支持 Redis + 独立 worker 的生产级任务队列后端
 - 通过 Next.js 同源代理减少本地开发时常见的 `Failed to fetch`
 - 支持 `allowedDevOrigins`，解决局域网访问 Next.js 开发服务时的警告
 - 提供可直接使用的 Vercel 与 Docker 部署配置
@@ -173,6 +174,14 @@ POST /api/analyze/jobs
 GET  /api/analyze/jobs/{job_id}
 ```
 
+生产队列环境变量：
+
+```env
+REPOMAP_JOB_BACKEND=redis
+REPOMAP_REDIS_URL=redis://localhost:6379/0
+REPOMAP_QUEUE_NAME=repomap-analysis
+```
+
 ## 输出示例
 
 目录树：
@@ -282,6 +291,12 @@ Docker Compose 启动完整栈：
 docker compose up --build
 ```
 
+本地启动独立 worker：
+
+```bash
+repomap-worker
+```
+
 ## 当前状态
 
 已经实现：
@@ -292,10 +307,10 @@ docker compose up --build
 - Web 图谱搜索、筛选和布局切换
 - 基于磁盘的分析缓存
 - 面向大仓库的异步分析任务与进度轮询
+- 基于 Redis 的生产级任务队列与独立 worker
 
 仍然值得继续增强：
 
-- 面向生产环境的持久化任务队列
 - 更深入的 Turbo、Nx、Cargo workspace、Maven、Gradle、Bazel 等 monorepo 解析
 - 图谱分组、折叠、保存视图、边聚合和更多布局预设
 - 增量分析而不是每次全量重扫
@@ -306,7 +321,7 @@ docker compose up --build
 
 - 增加更多语言专属解析器
 - 更强的包管理器 / monorepo 解析
-- 大仓库的持久化任务队列与后台执行
+- 大仓库的队列重试、优先级与运维能力
 - 图谱分组、布局预设和协作能力
 
 ---

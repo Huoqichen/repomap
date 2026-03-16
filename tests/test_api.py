@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from pathlib import Path
 
 from repomap_api.main import app
+from repomap_api.jobs import InMemoryAnalysisJobManager, reset_job_manager
 from repomap_api.schemas import AnalyzeResponse, GraphStats
 from repomap_api.service import analyze_remote_repository
 
@@ -175,3 +176,12 @@ def test_async_analysis_job_endpoint(monkeypatch) -> None:
     assert job_response.status_code == 200
     assert job_response.json()["status"] == "completed"
     assert job_response.json()["cached"] is True
+
+
+def test_job_manager_defaults_to_memory_backend() -> None:
+    reset_job_manager()
+    from repomap_api.jobs import get_job_manager
+
+    manager = get_job_manager(backend="memory", max_workers=1, job_ttl_seconds=60)
+
+    assert isinstance(manager, InMemoryAnalysisJobManager)

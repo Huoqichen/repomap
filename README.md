@@ -40,6 +40,7 @@ It is designed for developers who want to understand an unfamiliar codebase quic
 - Resolve JavaScript/TypeScript monorepo workspaces from `package.json`, `pnpm-workspace.yaml`, `lerna.json`, and `tsconfig` / `jsconfig` path aliases
 - Cache repository analysis results on disk to speed up repeated requests
 - Run large-repository analysis through async job endpoints with progress polling
+- Support a production queue backend with Redis + dedicated worker processes
 - Proxy frontend requests through Next.js to avoid common local `Failed to fetch` issues
 - Support `allowedDevOrigins` for LAN-based Next.js development
 - Provide production-ready deployment files for Vercel and Docker
@@ -191,6 +192,14 @@ POST /api/analyze/jobs
 GET  /api/analyze/jobs/{job_id}
 ```
 
+Production queue environment:
+
+```env
+REPOMAP_JOB_BACKEND=redis
+REPOMAP_REDIS_URL=redis://localhost:6379/0
+REPOMAP_QUEUE_NAME=repomap-analysis
+```
+
 ## Example Output
 
 Folder tree:
@@ -300,6 +309,12 @@ Full stack with Docker Compose:
 docker compose up --build
 ```
 
+Run a dedicated worker locally:
+
+```bash
+repomap-worker
+```
+
 ## Current Status
 
 Implemented now:
@@ -310,10 +325,10 @@ Implemented now:
 - web graph search, filtering, and layout switching
 - on-disk analysis caching for repeated repository scans
 - async analysis jobs with progress polling for large repositories
+- production queue mode with Redis-backed job storage and dedicated workers
 
 Still good next upgrades:
 
-- persistent queue workers for production deployments
 - deeper package-manager-aware monorepo resolution for Turbo, Nx, Cargo workspaces, Maven multi-module, Gradle multi-project, and Bazel
 - graph grouping, collapsing, saved views, edge bundling, and layout presets
 - incremental re-analysis instead of full rescans
@@ -324,7 +339,7 @@ Contributions are welcome. Good next steps include:
 
 - more language-specific parsers
 - package-manager-aware monorepo resolution
-- persistent queue workers and async execution for large repositories
+- queue retries, job prioritization, and operations tooling for large repositories
 - graph grouping, layout presets, and collaboration features
 
 ---
