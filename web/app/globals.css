@@ -171,13 +171,18 @@ select {
 
 .results-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(0, 1.8fr) minmax(340px, 0.82fr);
   gap: 20px;
 }
 
 .graph-panel {
   overflow: hidden;
-  min-height: 760px;
+  min-height: 860px;
+}
+
+.mermaid-main-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .graph-header,
@@ -227,6 +232,12 @@ select {
     linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.04));
 }
 
+.graph-mini-frame .graph-canvas {
+  height: 320px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
 .graph-toolbar {
   display: flex;
   justify-content: space-between;
@@ -262,6 +273,21 @@ select {
   background: rgba(255, 255, 255, 0.85);
   min-height: 220px;
   padding: 18px;
+}
+
+.mermaid-main-frame {
+  min-height: 680px;
+  padding: 0 20px 20px;
+}
+
+.mermaid-main-frame .mermaid-preview,
+.mermaid-main-frame .mermaid-fallback {
+  min-height: 680px;
+  height: 100%;
+}
+
+.graph-mini-frame {
+  margin-top: 14px;
 }
 
 .mermaid-preview svg {
@@ -406,5 +432,17 @@ select {
 
   .graph-canvas {
     height: 500px;
+  }
+
+  .mermaid-main-frame {
+    min-height: 420px;
+    padding: 0 16px 16px;
+  }
+
+  .mermaid-main-frame .mermaid-preview,
+  .mermaid-main-frame .mermaid-fallback,
+  .graph-mini-frame .graph-canvas {
+    min-height: 420px;
+    height: 420px;
   }
 }

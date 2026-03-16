@@ -16,6 +16,8 @@ const copy = {
     submit: "开始分析",
     loading: "分析中",
     graphTitle: "Graph",
+    mermaidMainTitle: "Mermaid",
+    graphMiniTitle: "交互图",
     primary: "语言",
     nodes: "节点",
     edges: "连线",
@@ -48,6 +50,8 @@ const copy = {
     submit: "Analyze",
     loading: "Analyzing",
     graphTitle: "Graph",
+    mermaidMainTitle: "Mermaid",
+    graphMiniTitle: "Graph",
     primary: "Language",
     nodes: "Nodes",
     edges: "Edges",
@@ -230,9 +234,9 @@ export function RepoWorkbench() {
 
       {architecture ? (
         <section className="results-grid">
-          <article className="panel graph-panel">
+          <article className="panel graph-panel mermaid-main-panel">
             <header className="graph-header compact-header">
-              <h2>{t.graphTitle}</h2>
+              <h2>{t.mermaidMainTitle}</h2>
               <div className="stat-row">
                 <span className="stat-pill">
                   {t.primary}: {architecture.primary_language ?? t.none}
@@ -249,7 +253,9 @@ export function RepoWorkbench() {
               </div>
             </header>
 
-            <GraphCanvas nodes={nodes} edges={edges} onSelect={setSelectedNode} selectedNodeId={selectedNode?.id} />
+            <div className="mermaid-main-frame">
+              <MermaidPreview chart={result.mermaid} fallbackLabel={t.mermaidFallback} />
+            </div>
 
             <footer className="graph-toolbar">
               <span>{architecture.repository_url}</span>
@@ -311,14 +317,18 @@ export function RepoWorkbench() {
             </section>
 
             <section className="panel side-section">
-              <h3>{t.mermaidTitle}</h3>
-              <div className="mermaid-stack">
-                <MermaidPreview chart={result.mermaid} fallbackLabel={t.mermaidFallback} />
-                <details className="mermaid-source">
-                  <summary>{t.mermaidCodeTitle}</summary>
-                  <pre className="code-block">{result.mermaid}</pre>
-                </details>
+              <h3>{t.graphMiniTitle}</h3>
+              <div className="graph-mini-frame">
+                <GraphCanvas nodes={nodes} edges={edges} onSelect={setSelectedNode} selectedNodeId={selectedNode?.id} />
               </div>
+            </section>
+
+            <section className="panel side-section">
+              <h3>{t.mermaidCodeTitle}</h3>
+              <details className="mermaid-source" open>
+                <summary>{t.mermaidCodeTitle}</summary>
+                <pre className="code-block">{result.mermaid}</pre>
+              </details>
             </section>
           </aside>
         </section>

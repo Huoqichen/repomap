@@ -5,8 +5,8 @@
     Analyze GitHub repositories with a Python engine, FastAPI backend, and Next.js + D3.js web UI.
   </p>
   <p>
-    <a href="https://github.com/Huoqichen/repograph/stargazers"><img src="https://img.shields.io/github/stars/Huoqichen/repograph?style=flat-square" alt="Stars" /></a>
-    <a href="https://github.com/Huoqichen/repograph/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License" /></a>
+    <a href="https://github.com/Huoqichen/repomap/stargazers"><img src="https://img.shields.io/github/stars/Huoqichen/repomap?style=flat-square" alt="Stars" /></a>
+    <a href="https://github.com/Huoqichen/repomap/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License" /></a>
     <img src="https://img.shields.io/badge/platform-Python%20%7C%20Web-green?style=flat-square" alt="Platform" />
   </p>
   <p>

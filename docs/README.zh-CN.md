@@ -5,8 +5,8 @@
     使用 Python 分析引擎、FastAPI 后端与 Next.js + D3.js Web 界面分析 GitHub 仓库。
   </p>
   <p>
-    <a href="https://github.com/Huoqichen/repograph/stargazers"><img src="https://img.shields.io/github/stars/Huoqichen/repograph?style=flat-square" alt="Stars" /></a>
-    <a href="https://github.com/Huoqichen/repograph/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License" /></a>
+    <a href="https://github.com/Huoqichen/repomap/stargazers"><img src="https://img.shields.io/github/stars/Huoqichen/repomap?style=flat-square" alt="Stars" /></a>
+    <a href="https://github.com/Huoqichen/repomap/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License" /></a>
     <img src="https://img.shields.io/badge/platform-Python%20%7C%20Web-green?style=flat-square" alt="Platform" />
   </p>
   <p>
@@ -289,11 +289,11 @@ docker compose up --build
 ## Star History
 
 <p align="center">
-  <a href="https://www.star-history.com/?repos=Huoqichen%2Frepograph&type=date&legend=top-left">
+  <a href="https://www.star-history.com/?repos=Huoqichen%2Frepomap&type=date&legend=top-left">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Huoqichen/repograph&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Huoqichen/repograph&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Huoqichen/repograph&type=Date" />
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Huoqichen/repomap&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Huoqichen/repomap&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Huoqichen/repomap&type=Date" />
     </picture>
   </a>
 </p>
