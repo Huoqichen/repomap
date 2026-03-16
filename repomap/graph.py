@@ -78,7 +78,7 @@ def graph_to_mermaid(graph: nx.DiGraph) -> str:
         "flowchart LR",
     ]
     if not graph.nodes:
-        lines.append('    empty["No supported source modules found"]')
+        lines.append('    empty["No source modules found"]')
         return "\n".join(lines)
 
     node_ids = {node: f"N{index}" for index, node in enumerate(sorted(graph.nodes))}

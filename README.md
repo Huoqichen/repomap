@@ -26,7 +26,8 @@ It is designed for developers who want to understand an unfamiliar codebase quic
 ## Features
 
 - Analyze GitHub repositories from both CLI and Web UI
-- Automatically detect Python, JavaScript, and Go
+- Detect a broad set of source and scripting languages across the repository
+- Perform dependency analysis for Python, JavaScript, TypeScript, and Go
 - Parse dependencies and build graphs with `networkx`
 - Infer top-level architecture layers:
   `Frontend`, `Backend`, `Database`, `Infrastructure`, `Shared`
@@ -35,6 +36,19 @@ It is designed for developers who want to understand an unfamiliar codebase quic
 - Proxy frontend requests through Next.js to avoid common local `Failed to fetch` issues
 - Support `allowedDevOrigins` for LAN-based Next.js development
 - Provide production-ready deployment files for Vercel and Docker
+
+## Language Coverage
+
+`repomap` now separates language support into two levels:
+
+- Repository-wide language detection:
+  Python, JavaScript, TypeScript, Go, Rust, Java, Kotlin, Scala, Groovy, C, C++, C#, Swift, Objective-C, PHP, Ruby, Perl, Lua, R, Julia, Dart, Shell, PowerShell, Batch, Tcl, Elixir, Erlang, Haskell, OCaml, F#, Nim, Zig, Crystal, Elm, Clojure, Common Lisp, Scheme, Racket, Fortran, COBOL, Ada, Pascal, Visual Basic, D, Solidity, Move, V, Verilog, VHDL, Assembly, SQL, GraphQL, CSS, HTML, XML, Vue, Svelte, Astro, Nix, Starlark, Terraform, HCL, Bicep, Jsonnet, Cue, Rego, Puppet, Raku, Apex, Haxe, ReasonML, Standard ML, Awk, AppleScript, Dockerfile, Makefile, and CMake.
+- Deep dependency analysis:
+  Python, JavaScript, TypeScript, and Go.
+- Generic module inventory for all other detected languages:
+  files are still included in the architecture map, tree, graph, and language summary even when deep import resolution is not available.
+
+Detection uses file extensions, special filenames such as `Dockerfile` and `Makefile`, and shebang-based recognition for extensionless scripts.
 
 ## Demo
 
