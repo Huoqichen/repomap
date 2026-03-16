@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Callable
 
 from repomap.analyzer import analyze_repository
-from repomap.graph import build_architecture_map, build_dependency_graph, graph_to_mermaid
+from repomap.graph import build_architecture_map, build_dependency_graph, graph_to_mermaid, graph_to_mermaid_diagrams
 from repomap.repository import cleanup_clone, clone_repository, detect_git_branch
-from repomap_api.schemas import AnalyzeResponse, GraphStats
+from repomap_api.schemas import AnalyzeResponse, GraphStats, MermaidDiagram
 
 ProgressCallback = Callable[[str, int], None]
 
@@ -40,11 +40,13 @@ def analyze_remote_repository(
         _notify_progress(progress_callback, "building_graph", 78)
         graph = build_dependency_graph(analysis)
         architecture_map = build_architecture_map(analysis, graph)
-        mermaid = graph_to_mermaid(graph)
+        mermaid_diagrams = [MermaidDiagram.model_validate(item) for item in graph_to_mermaid_diagrams(graph)]
+        mermaid = mermaid_diagrams[0].chart if mermaid_diagrams else graph_to_mermaid(graph)
 
         response = AnalyzeResponse(
             architecture_map=architecture_map,
             mermaid=mermaid,
+            mermaid_diagrams=mermaid_diagrams,
             stats=GraphStats(
                 nodes=graph.number_of_nodes(),
                 edges=graph.number_of_edges(),

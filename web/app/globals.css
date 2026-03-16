@@ -293,6 +293,29 @@ select {
   margin-top: 14px;
 }
 
+.mermaid-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mermaid-tab {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+}
+
+.mermaid-tab.is-active {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
 .mermaid-stack-preview .mermaid-preview,
 .mermaid-stack-preview .mermaid-fallback {
   min-height: 340px;

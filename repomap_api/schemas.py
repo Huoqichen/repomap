@@ -19,11 +19,18 @@ class BranchListResponse(BaseModel):
     branches: list[str]
 
 
+class MermaidDiagram(BaseModel):
+    key: str
+    title: str
+    chart: str
+
+
 class AnalyzeResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     architecture_map: dict
     mermaid: str
+    mermaid_diagrams: list[MermaidDiagram] = Field(default_factory=list)
     stats: GraphStats
 
 

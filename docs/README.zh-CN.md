@@ -31,8 +31,8 @@
 - 使用 `networkx` 构建依赖关系图
 - 自动推断顶层架构层：
   `Frontend`、`Backend`、`Database`、`Infrastructure`、`Shared`
-- 输出目录树、JSON 和 Mermaid
-- Web 界面中的 Mermaid 支持可视化渲染与源码同时查看
+- 输出目录树、JSON 和精简后的 Mermaid 架构图
+- Web 界面中的 Mermaid 支持整体架构图与分层子图切换查看
 - 使用 D3.js 在浏览器中渲染交互式架构图
 - Web 端支持按层级、语言和关键词筛选图谱
 - Web 端支持力导向、分层、环形三种图布局

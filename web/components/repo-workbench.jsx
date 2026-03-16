@@ -39,6 +39,8 @@ const copy = {
     mermaidTitle: "Mermaid",
     mermaidCodeTitle: "源码",
     mermaidFallback: "Mermaid 渲染失败，下面保留源码。",
+    mermaidOverview: "整体架构",
+    mermaidDiagram: "图表",
     treeTitle: "Tree",
     languageZh: "中文",
     languageEn: "EN",
@@ -88,6 +90,8 @@ const copy = {
     mermaidTitle: "Mermaid",
     mermaidCodeTitle: "Source",
     mermaidFallback: "Mermaid rendering failed. The source is still available below.",
+    mermaidOverview: "Overview",
+    mermaidDiagram: "Diagram",
     treeTitle: "Tree",
     languageZh: "中文",
     languageEn: "EN",
@@ -119,6 +123,7 @@ export function RepoWorkbench() {
   const [languageFilter, setLanguageFilter] = useState("all");
   const [layoutMode, setLayoutMode] = useState("force");
   const [jobStatus, setJobStatus] = useState(null);
+  const [selectedMermaidKey, setSelectedMermaidKey] = useState("overview");
   const [error, setError] = useState("");
   const [branchError, setBranchError] = useState("");
   const [isPending, setIsPending] = useState(false);
@@ -130,6 +135,11 @@ export function RepoWorkbench() {
   const edges = architecture?.graph?.edges ?? [];
   const layers = architecture?.architecture_layers ?? [];
   const modules = architecture?.modules ?? [];
+  const mermaidDiagrams = result?.mermaid_diagrams ?? [{ key: "overview", title: t.mermaidOverview, chart: result?.mermaid ?? "" }];
+  const activeMermaid =
+    mermaidDiagrams.find((diagram) => diagram.key === selectedMermaidKey) ??
+    mermaidDiagrams[0] ??
+    { key: "overview", title: t.mermaidOverview, chart: "" };
 
   const selectedModule = useMemo(
     () => modules.find((module) => module.id === selectedNode?.id) ?? null,
@@ -170,6 +180,10 @@ export function RepoWorkbench() {
       setSelectedNode(filteredNodes[0]);
     }
   }, [filteredNodeIds, filteredNodes, selectedNode]);
+
+  useEffect(() => {
+    setSelectedMermaidKey("overview");
+  }, [result]);
 
   useEffect(() => {
     let cancelled = false;
@@ -451,12 +465,24 @@ export function RepoWorkbench() {
             <section className="panel side-section">
               <h3>{t.mermaidTitle}</h3>
               <div className="mermaid-stack">
+                <div className="mermaid-tabs">
+                  {mermaidDiagrams.map((diagram) => (
+                    <button
+                      key={diagram.key}
+                      type="button"
+                      className={selectedMermaidKey === diagram.key ? "mermaid-tab is-active" : "mermaid-tab"}
+                      onClick={() => setSelectedMermaidKey(diagram.key)}
+                    >
+                      {diagram.title || t.mermaidDiagram}
+                    </button>
+                  ))}
+                </div>
                 <div className="mermaid-stack-preview">
-                  <MermaidPreview chart={result.mermaid} fallbackLabel={t.mermaidFallback} />
+                  <MermaidPreview chart={activeMermaid.chart} fallbackLabel={t.mermaidFallback} />
                 </div>
                 <details className="mermaid-source" open>
                   <summary>{t.mermaidCodeTitle}</summary>
-                  <pre className="code-block">{result.mermaid}</pre>
+                  <pre className="code-block">{activeMermaid.chart}</pre>
                 </details>
               </div>
             </section>

@@ -32,8 +32,8 @@ It is designed for developers who want to understand an unfamiliar codebase quic
 - Parse dependencies and build graphs with `networkx`
 - Infer top-level architecture layers:
   `Frontend`, `Backend`, `Database`, `Infrastructure`, `Shared`
-- Export folder tree, JSON, and Mermaid output
-- Render Mermaid as both source and live diagram in the web UI
+- Export folder tree, JSON, and compact Mermaid architecture diagrams
+- Render Mermaid as overview + layer sub-diagrams in the web UI
 - Render an interactive graph in the browser with D3.js
 - Support graph search and filtering by layer and language in the web UI
 - Support graph layout switching in the web UI with force, layered, and radial views

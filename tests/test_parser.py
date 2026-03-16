@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from repomap.graph import graph_to_mermaid
+from repomap.graph import graph_to_mermaid, graph_to_mermaid_diagrams
 from repomap.layers import detect_module_layer
 from repomap.models import ModuleInfo
 from repomap.parser import (
@@ -342,7 +342,7 @@ def test_layer_detection_uses_path_and_dependencies() -> None:
     assert detect_module_layer(module) == "Frontend"
 
 
-def test_graph_to_mermaid_generates_edges() -> None:
+def test_graph_to_mermaid_generates_layer_overview_and_subdiagrams() -> None:
     import networkx as nx
 
     graph = nx.DiGraph()
@@ -365,8 +365,11 @@ def test_graph_to_mermaid_generates_edges() -> None:
     graph.add_edge("javascript:api/handlers", "python:core.service")
 
     mermaid = graph_to_mermaid(graph)
+    diagrams = graph_to_mermaid_diagrams(graph)
 
     assert "flowchart LR" in mermaid
-    assert "api/handlers" in mermaid
-    assert "core.service" in mermaid
-    assert "click N0" in mermaid or "click N1" in mermaid
+    assert "Frontend" in mermaid or "Backend" in mermaid
+    assert "modules" in mermaid
+    assert "api/handlers" not in mermaid
+    assert diagrams[0]["key"] == "overview"
+    assert any(diagram["key"] == "backend" for diagram in diagrams)
