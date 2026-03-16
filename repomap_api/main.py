@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from repomap_api.config import get_settings
-from repomap_api.schemas import AnalyzeRequest, AnalyzeResponse
+from repomap_api.schemas import AnalyzeRequest, AnalyzeResponse, BranchListResponse
 from repomap_api.service import analyze_remote_repository
+from repomap.repository import list_remote_branches
 
 settings = get_settings()
 app = FastAPI(
@@ -26,6 +27,20 @@ app.add_middleware(
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/branches", response_model=BranchListResponse)
+def branches(repo_url: str = Query(..., description="GitHub repository URL.")) -> BranchListResponse:
+    if "github.com/" not in repo_url:
+        raise HTTPException(status_code=400, detail="Only GitHub repository URLs are supported.")
+
+    try:
+        default_branch, branch_names = list_remote_branches(repo_url)
+        return BranchListResponse(default_branch=default_branch, branches=branch_names)
+    except RuntimeError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except Exception as error:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Branch lookup failed: {error}") from error
 
 
 @app.post("/api/analyze", response_model=AnalyzeResponse)

@@ -97,9 +97,39 @@ python -m pip install -e .
 安装前端依赖：
 
 ```bash
-cd ../web
+cd web
 npm install
 ```
+
+## 本地运行
+
+先在仓库根目录启动后端 API：
+
+```bash
+python -m pip install -e .
+python -m uvicorn repomap_api.main:app --host 127.0.0.1 --port 8000
+```
+
+再打开第二个终端启动前端：
+
+```bash
+cd web
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+浏览器打开：
+
+```text
+http://127.0.0.1:3000
+```
+
+本地默认端口：
+
+- 前端：`http://127.0.0.1:3000`
+- 后端 API：`http://127.0.0.1:8000`
+- 健康检查：`http://127.0.0.1:8000/health`
 
 ## 用法
 

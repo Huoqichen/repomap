@@ -2,77 +2,58 @@
 
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { GraphCanvas } from "./graph-canvas";
-import { fetchArchitecture } from "../lib/api";
-
-const defaultUrl = "https://github.com/vercel/next.js";
+import { fetchArchitecture, fetchBranches } from "../lib/api";
 
 const copy = {
   zh: {
-    brand: "repomap.vercel.app",
-    title: "仓库架构，一眼看清。",
-    subtitle: "输入 GitHub 仓库地址，立即生成可交互的架构图。",
-    repoLabel: "GitHub 仓库地址",
-    branchLabel: "分支（可选）",
-    repoPlaceholder: "https://github.com/user/repo",
-    branchPlaceholder: "main",
+    brand: "repomap",
+    title: "仓库架构图",
+    repoPlaceholder: "GitHub 仓库地址",
+    branchPlaceholder: "分支",
+    branchAuto: "默认分支",
+    branchLoading: "加载分支中",
     submit: "开始分析",
     loading: "分析中",
-    example: "示例",
-    emptyTitle: "等待分析",
-    emptyBody: "输入仓库地址后即可查看架构图。",
-    graphTitle: "架构图",
-    graphHint: "拖动、缩放、点击节点查看源码。",
-    graphRepo: "仓库",
-    graphBranch: "分支",
-    autoBranch: "自动识别",
-    summaryTitle: "概览",
-    primary: "主语言",
+    graphTitle: "Graph",
+    primary: "语言",
     nodes: "节点",
     edges: "连线",
-    layers: "架构层",
-    detailsTitle: "选中模块",
-    detailsEmpty: "点击图中的节点查看详细信息。",
-    openSource: "打开源码",
+    layers: "层级",
+    detailsTitle: "模块",
+    detailsEmpty: "选择节点",
+    openSource: "源码",
     internal: "内部依赖",
     external: "外部依赖",
     none: "无",
-    listTitle: "模块",
+    listTitle: "Modules",
     mermaidTitle: "Mermaid",
-    treeTitle: "目录树",
+    treeTitle: "Tree",
     languageZh: "中文",
     languageEn: "EN",
     invalidRepo: "请输入有效的 GitHub 仓库地址。",
     backendUnreachable: "后端 API 无法访问，请先启动 Python API。",
-    analyzeFailed: "仓库分析失败。"
+    analyzeFailed: "仓库分析失败。",
+    branchFailed: "分支读取失败。"
   },
   en: {
-    brand: "repomap.vercel.app",
-    title: "Repository architecture, at a glance.",
-    subtitle: "Paste a GitHub repository URL and generate an interactive architecture graph.",
-    repoLabel: "GitHub repository URL",
-    branchLabel: "Branch (optional)",
-    repoPlaceholder: "https://github.com/user/repo",
-    branchPlaceholder: "main",
+    brand: "repomap",
+    title: "Repository Map",
+    repoPlaceholder: "GitHub repository URL",
+    branchPlaceholder: "Branch",
+    branchAuto: "Default branch",
+    branchLoading: "Loading branches",
     submit: "Analyze",
     loading: "Analyzing",
-    example: "Example",
-    emptyTitle: "Ready to analyze",
-    emptyBody: "Enter a repository URL to see the architecture graph.",
-    graphTitle: "Architecture graph",
-    graphHint: "Drag, zoom, and click nodes to open source files.",
-    graphRepo: "Repository",
-    graphBranch: "Branch",
-    autoBranch: "Auto-detected",
-    summaryTitle: "Overview",
-    primary: "Primary language",
+    graphTitle: "Graph",
+    primary: "Language",
     nodes: "Nodes",
     edges: "Edges",
     layers: "Layers",
-    detailsTitle: "Selected module",
-    detailsEmpty: "Select a node in the graph to inspect it.",
-    openSource: "Open source",
-    internal: "Internal deps",
-    external: "External deps",
+    detailsTitle: "Module",
+    detailsEmpty: "Select a node",
+    openSource: "Source",
+    internal: "Internal",
+    external: "External",
     none: "None",
     listTitle: "Modules",
     mermaidTitle: "Mermaid",
@@ -81,25 +62,25 @@ const copy = {
     languageEn: "EN",
     invalidRepo: "Please enter a valid GitHub repository URL.",
     backendUnreachable: "Backend API is unreachable. Start the Python API first.",
-    analyzeFailed: "Repository analysis failed."
+    analyzeFailed: "Repository analysis failed.",
+    branchFailed: "Failed to load branches."
   }
 };
 
 export function RepoWorkbench() {
   const [locale, setLocale] = useState("zh");
-  const [repoUrl, setRepoUrl] = useState(defaultUrl);
+  const [repoUrl, setRepoUrl] = useState("");
   const [branch, setBranch] = useState("");
+  const [branches, setBranches] = useState([]);
+  const [defaultBranch, setDefaultBranch] = useState("");
   const [result, setResult] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const [error, setError] = useState("");
+  const [branchError, setBranchError] = useState("");
   const [isPending, setIsPending] = useState(false);
+  const [isBranchLoading, setIsBranchLoading] = useState(false);
 
   const t = copy[locale];
-
-  useEffect(() => {
-    void handleAnalyze(defaultUrl, "");
-  }, []);
-
   const architecture = result?.architecture_map;
   const nodes = architecture?.graph?.nodes ?? [];
   const edges = architecture?.graph?.edges ?? [];
@@ -111,12 +92,52 @@ export function RepoWorkbench() {
     [modules, selectedNode]
   );
 
+  useEffect(() => {
+    let cancelled = false;
+    const normalized = repoUrl.trim();
+
+    setBranch("");
+    setBranches([]);
+    setDefaultBranch("");
+    setBranchError("");
+
+    if (!normalized.includes("github.com/")) {
+      setIsBranchLoading(false);
+      return undefined;
+    }
+
+    setIsBranchLoading(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const payload = await fetchBranches(normalized);
+        if (cancelled) {
+          return;
+        }
+        setBranches(payload.branches ?? []);
+        setDefaultBranch(payload.default_branch ?? "");
+      } catch (requestError) {
+        if (!cancelled) {
+          setBranchError(localizeBranchError(requestError, locale));
+        }
+      } finally {
+        if (!cancelled) {
+          setIsBranchLoading(false);
+        }
+      }
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [locale, repoUrl]);
+
   async function handleAnalyze(nextRepoUrl = repoUrl, nextBranch = branch) {
     setIsPending(true);
     setError("");
 
     try {
-      const response = await fetchArchitecture(nextRepoUrl, nextBranch || undefined);
+      const response = await fetchArchitecture(nextRepoUrl.trim(), nextBranch || undefined);
       startTransition(() => {
         setResult(response);
         setSelectedNode(response.architecture_map.graph.nodes[0] ?? null);
@@ -136,7 +157,7 @@ export function RepoWorkbench() {
   return (
     <main className="page-shell">
       <header className="topbar">
-        <span className="brand-chip">{t.brand}</span>
+        <span className="brand-mark">{t.brand}</span>
         <div className="lang-switch" role="tablist" aria-label="Language switch">
           <button
             type="button"
@@ -155,16 +176,14 @@ export function RepoWorkbench() {
         </div>
       </header>
 
-      <section className="hero-panel">
+      <section className="hero-panel hero-minimal">
         <h1>{t.title}</h1>
-        <p>{t.subtitle}</p>
       </section>
 
       <section className="panel input-panel">
         <form onSubmit={onSubmit}>
-          <div className="form-grid">
+          <div className="form-grid compact-grid">
             <div className="field field-wide">
-              <label htmlFor="repo-url">{t.repoLabel}</label>
               <input
                 id="repo-url"
                 type="url"
@@ -175,14 +194,25 @@ export function RepoWorkbench() {
               />
             </div>
             <div className="field field-branch">
-              <label htmlFor="branch">{t.branchLabel}</label>
-              <input
+              <select
                 id="branch"
-                type="text"
-                placeholder={t.branchPlaceholder}
                 value={branch}
                 onChange={(event) => setBranch(event.target.value)}
-              />
+                disabled={isBranchLoading || (!defaultBranch && branches.length === 0)}
+              >
+                <option value="">
+                  {isBranchLoading
+                    ? t.branchLoading
+                    : defaultBranch
+                      ? `${t.branchAuto} · ${defaultBranch}`
+                      : t.branchPlaceholder}
+                </option>
+                {branches.map((branchName) => (
+                  <option key={branchName} value={branchName}>
+                    {branchName}
+                  </option>
+                ))}
+              </select>
             </div>
             <button className="submit-button" type="submit" disabled={isPending}>
               {isPending ? t.loading : t.submit}
@@ -190,75 +220,39 @@ export function RepoWorkbench() {
           </div>
         </form>
 
-        <div className="input-footer">
-          <span>
-            {t.example}: {defaultUrl}
-          </span>
-          {error ? <span className="status-error">{error}</span> : null}
-        </div>
+        {error || branchError ? <p className="status-line">{error || branchError}</p> : null}
       </section>
 
       {architecture ? (
         <section className="results-grid">
           <article className="panel graph-panel">
-            <header className="graph-header">
-              <div className="graph-title-row">
-                <div>
-                  <h2>{t.graphTitle}</h2>
-                  <p className="graph-note">{t.graphHint}</p>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-pill">
-                    {t.primary}: {architecture.primary_language ?? t.none}
-                  </span>
-                  <span className="stat-pill">
-                    {t.nodes}: {result.stats.nodes}
-                  </span>
-                  <span className="stat-pill">
-                    {t.edges}: {result.stats.edges}
-                  </span>
-                </div>
+            <header className="graph-header compact-header">
+              <h2>{t.graphTitle}</h2>
+              <div className="stat-row">
+                <span className="stat-pill">
+                  {t.primary}: {architecture.primary_language ?? t.none}
+                </span>
+                <span className="stat-pill">
+                  {t.nodes}: {result.stats.nodes}
+                </span>
+                <span className="stat-pill">
+                  {t.edges}: {result.stats.edges}
+                </span>
+                <span className="stat-pill">
+                  {t.layers}: {layers.length}
+                </span>
               </div>
             </header>
 
             <GraphCanvas nodes={nodes} edges={edges} onSelect={setSelectedNode} selectedNodeId={selectedNode?.id} />
 
             <footer className="graph-toolbar">
-              <span>
-                {t.graphRepo}: {architecture.repository_url}
-              </span>
-              <span>
-                {t.graphBranch}: {architecture.default_branch ?? t.autoBranch}
-              </span>
+              <span>{architecture.repository_url}</span>
+              <span>{architecture.default_branch ?? defaultBranch ?? t.none}</span>
             </footer>
           </article>
 
           <aside className="sidebar">
-            <section className="panel side-section">
-              <h3>{t.summaryTitle}</h3>
-              <div className="summary-grid">
-                <div className="summary-card">
-                  <span>{t.layers}</span>
-                  <strong>{layers.length}</strong>
-                </div>
-                <div className="summary-card">
-                  <span>{t.nodes}</span>
-                  <strong>{result.stats.nodes}</strong>
-                </div>
-                <div className="summary-card">
-                  <span>{t.edges}</span>
-                  <strong>{result.stats.edges}</strong>
-                </div>
-              </div>
-              <div className="layers-grid">
-                {layers.map((layer) => (
-                  <span className="layer-pill" key={layer.name}>
-                    {layer.name} · {layer.module_count}
-                  </span>
-                ))}
-              </div>
-            </section>
-
             <section className="panel side-section">
               <h3>{t.detailsTitle}</h3>
               {selectedNode && selectedModule ? (
@@ -317,14 +311,7 @@ export function RepoWorkbench() {
             </section>
           </aside>
         </section>
-      ) : (
-        <section className="panel empty-state">
-          <div>
-            <h2>{t.emptyTitle}</h2>
-            <p>{t.emptyBody}</p>
-          </div>
-        </section>
-      )}
+      ) : null}
     </main>
   );
 }
@@ -334,7 +321,7 @@ function TreeNode({ node }) {
     return null;
   }
 
-  const children = node.children ?? [];
+  const children = Array.isArray(node.children) ? node.children : [];
   return (
     <div className="tree-node">
       <strong>{node.name}</strong>
@@ -361,4 +348,12 @@ function localizeError(error, locale) {
     return copy[locale].backendUnreachable;
   }
   return message || copy[locale].analyzeFailed;
+}
+
+function localizeBranchError(error, locale) {
+  const message = error instanceof Error ? error.message : "";
+  if (message.includes("Backend API is unreachable") || message.includes("后端 API 无法访问")) {
+    return copy[locale].backendUnreachable;
+  }
+  return message || copy[locale].branchFailed;
 }

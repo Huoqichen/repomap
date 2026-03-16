@@ -21,3 +21,21 @@ export async function fetchArchitecture(repoUrl, branch) {
 
   return payload;
 }
+
+export async function fetchBranches(repoUrl) {
+  if (!repoUrl.includes("github.com/")) {
+    return { default_branch: null, branches: [] };
+  }
+
+  const params = new URLSearchParams({ repo_url: repoUrl });
+  const response = await fetch(`/api/branches?${params.toString()}`, {
+    cache: "no-store"
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.detail || "Failed to load branches. / 分支加载失败。");
+  }
+
+  return payload;
+}

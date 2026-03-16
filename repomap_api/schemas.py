@@ -14,6 +14,11 @@ class GraphStats(BaseModel):
     layers: int
 
 
+class BranchListResponse(BaseModel):
+    default_branch: str | None
+    branches: list[str]
+
+
 class AnalyzeResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 

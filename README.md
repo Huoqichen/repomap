@@ -101,6 +101,36 @@ cd web
 npm install
 ```
 
+## Run Locally
+
+Start the backend API first from the repository root:
+
+```bash
+python -m pip install -e .
+python -m uvicorn repomap_api.main:app --host 127.0.0.1 --port 8000
+```
+
+In a second terminal, start the frontend:
+
+```bash
+cd web
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Open the app in your browser:
+
+```text
+http://127.0.0.1:3000
+```
+
+Default local ports:
+
+- Frontend: `http://127.0.0.1:3000`
+- Backend API: `http://127.0.0.1:8000`
+- Health check: `http://127.0.0.1:8000/health`
+
 ## Usage
 
 CLI usage:
@@ -261,19 +291,11 @@ Contributions are welcome. Good next steps include:
 ## Star History
 
 <p align="center">
-  <a href="https://www.star-history.com/?repos=Huoqichen%2Frepograph&type=date">
-    <!-- 自定义左上角头像 + 仓库名 -->
-    <div style="position: relative; margin-bottom: -20px;">
-      <img 
-        src="https://avatars.githubusercontent.com/Huoqichen" 
-        style="position: absolute; top: -25px; left: 20px; width: 20px; height: 20px; border-radius: 50%;"
-      >
-      <span style="position: absolute; top: -28px; left: 45px; font-size: 12px; color: #666;">Huoqichen/repograph</span>
-    </div>
-    <!-- 原始 Star History 图表 -->
-    <img 
-      alt="Star History Chart" 
-      src="https://api.star-history.com/svg?repos=Huoqichen/repograph&type=date"
-    />
+  <a href="https://www.star-history.com/?repos=Huoqichen%2Frepograph&type=date&legend=top-left">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=Huoqichen/repograph&type=date&theme=dark&legend=top-left" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=Huoqichen/repograph&type=date&legend=top-left" />
+      <img alt="Star History Chart" src="https://api.star-history.com/image?repos=Huoqichen/repograph&type=date&legend=top-left" />
+    </picture>
   </a>
 </p>
