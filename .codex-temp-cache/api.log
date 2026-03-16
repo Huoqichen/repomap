@@ -8,3 +8,23 @@ INFO:     127.0.0.1:59676 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com
 INFO:     127.0.0.1:59169 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepograph HTTP/1.1" 200 OK
 INFO:     127.0.0.1:54317 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepograph HTTP/1.1" 200 OK
 INFO:     127.0.0.1:61928 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepograph HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51178 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepomap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51178 - "POST /api/analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50372 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepomap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50372 - "POST /api/analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepomap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64454 - "POST /api/analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55711 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepomap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62911 - "POST /api/analyze HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51569 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepomap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51569 - "POST /api/analyze/jobs HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51569 - "POST /api/analyze/jobs HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51569 - "POST /api/analyze/jobs HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51569 - "POST /api/analyze/jobs HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51569 - "POST /api/analyze/jobs HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64914 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepomap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64914 - "POST /api/analyze/jobs HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64914 - "POST /api/analyze/jobs HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51233 - "GET /api/branches?repo_url=https%3A%2F%2Fgithub.com%2FHuoqichen%2Frepomap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51233 - "POST /api/analyze/jobs HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63985 - "POST /api/analyze/jobs HTTP/1.1" 404 Not Found
