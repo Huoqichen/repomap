@@ -258,19 +258,14 @@ select {
   padding: 18px;
 }
 
-.mermaid-inline-layout {
+.mermaid-stack {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
   gap: 14px;
   margin-top: 14px;
 }
 
-.mermaid-inline-preview {
-  min-width: 0;
-}
-
-.mermaid-inline-preview .mermaid-preview,
-.mermaid-inline-preview .mermaid-fallback {
+.mermaid-stack-preview .mermaid-preview,
+.mermaid-stack-preview .mermaid-fallback {
   min-height: 340px;
   height: 100%;
 }
@@ -420,12 +415,8 @@ select {
     height: 500px;
   }
 
-  .mermaid-inline-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .mermaid-inline-preview .mermaid-preview,
-  .mermaid-inline-preview .mermaid-fallback {
+  .mermaid-stack-preview .mermaid-preview,
+  .mermaid-stack-preview .mermaid-fallback {
     min-height: 260px;
   }
 }

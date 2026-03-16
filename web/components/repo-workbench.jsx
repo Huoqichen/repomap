@@ -312,8 +312,8 @@ export function RepoWorkbench() {
 
             <section className="panel side-section">
               <h3>{t.mermaidTitle}</h3>
-              <div className="mermaid-inline-layout">
-                <div className="mermaid-inline-preview">
+              <div className="mermaid-stack">
+                <div className="mermaid-stack-preview">
                   <MermaidPreview chart={result.mermaid} fallbackLabel={t.mermaidFallback} />
                 </div>
                 <details className="mermaid-source" open>
